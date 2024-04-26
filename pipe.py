@@ -47,10 +47,9 @@ class Board:
     @staticmethod
     def parse_instance():
         matrix = []
-        lines = stdin.read().strip().split('\n')
-        for line in lines:
-            row = line.split()
-            matrix.append(row)
+        rows = stdin.read().strip().split('\n')
+        for row in rows:
+            matrix.append(row.split())
         return Board(matrix)
 
 def main():
