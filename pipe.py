@@ -5,6 +5,7 @@
 # 106194 Sofia Dinis Pinto Piteira
 
 import sys
+from sys import stdin
 from search import (
     Problem,
     Node,
@@ -46,36 +47,23 @@ class Board:
     @staticmethod
     def parse_instance():
         matrix = []
-        rows = content.strip().split('\n')
-        for row in rows:
-            matrix.append(row.split()) 
-        return matrix
+        row = stdin.readlines()  # Remove trailing newline
+        while row:  # Check if row is not empty
+            matrix.append(row.split())
+            row = stdin.readlines()  # Read next row
+        return Board(matrix)
 
 def main():
-    global content
-    if len(sys.argv) != 2:
-        print("Usage: python pipe.py <filename>")
-        return
-    filename = sys.argv[1]  
-    try:
-        with open(filename, 'r') as file:
-            content = file.read()
-            print("\ncontent:")
-            print(content)
-            parsed_matrix = Board.parse_instance()
-            board = Board(matrix=parsed_matrix)
-            print("\nmatrix:")
-            print(parsed_matrix[0][0], parsed_matrix[0][1], parsed_matrix[0][2])
-            print(board.matrix[1][0], board.matrix[1][1], board.matrix[1][2])
-            print(board.matrix[2][0], board.matrix[2][1], board.matrix[2][2])
-            print("\nadjacent values:")
-            print(board.adjacent_vertical_values(0, 0))
-            print(board.adjacent_horizontal_values(0, 0))
-            print(board.adjacent_vertical_values(1, 1))
-            print(board.adjacent_horizontal_values(1, 1))
-
-    except FileNotFoundError:
-        print(f"Arquivo '{filename}' não encontrado.")
+        board = Board.parse_instance()
+        print("\nmatrix:")
+        print(board.matrix[0][0], board.matrix[0][1], board.matrix[0][2])
+        print(board.matrix[1][0], board.matrix[1][1], board.matrix[1][2])
+        print(board.matrix[2][0], board.matrix[2][1], board.matrix[2][2])
+        print("\nadjacent values:")
+        print(board.adjacent_vertical_values(0, 0))
+        print(board.adjacent_horizontal_values(0, 0))
+        print(board.adjacent_vertical_values(1, 1))
+        print(board.adjacent_horizontal_values(1, 1))
 
 if __name__ == "__main__":
     main()
