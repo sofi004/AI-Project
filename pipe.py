@@ -47,10 +47,10 @@ class Board:
     @staticmethod
     def parse_instance():
         matrix = []
-        row = stdin.readlines()  # Remove trailing newline
-        while row:  # Check if row is not empty
-            matrix.append(row.split())
-            row = stdin.readlines()  # Read next row
+        lines = stdin.read().strip().split('\n')
+        for line in lines:
+            row = line.split()
+            matrix.append(row)
         return Board(matrix)
 
 def main():
