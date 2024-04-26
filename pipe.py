@@ -1,4 +1,19 @@
+# pipe.py: Template para implementação do projeto de Inteligência Artificial 2023/2024.
+
+# Grupo 09:
+# 106658 António Pinheiro Rodrigues Ortigão Delgado
+# 106194 Sofia Dinis Pinto Piteira
+
 import sys
+from search import (
+    Problem,
+    Node,
+    astar_search,
+    breadth_first_tree_search,
+    depth_first_tree_search,
+    greedy_search,
+    recursive_best_first_search,
+)
 
 content = ""
 
