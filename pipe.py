@@ -16,14 +16,13 @@ from search import (
     recursive_best_first_search,
 )
 
-content = ""
-
 class Board:
 
     def __init__(self, matrix=None):
         self.matrix = matrix
         self.rows = len(matrix)
         self.cols = len(matrix[0])
+    
     def adjacent_vertical_values(self, row: int, col: int):
         if row-1 < 0 and row+1 > self.rows:
             return ("None", "None")
@@ -44,6 +43,9 @@ class Board:
         else:
             return (self.matrix[row][col-1], self.matrix[row][col+1])
     
+    def get_value(self, row, col):
+        return self.matrix[row][col]
+    
     @staticmethod
     def parse_instance():
         matrix = []
@@ -63,11 +65,12 @@ def main():
         print(board.adjacent_horizontal_values(0, 0))
         print(board.adjacent_vertical_values(1, 1))
         print(board.adjacent_horizontal_values(1, 1))
+        problem = PipeMania(board)
+        initial_state = PipeManiaState(board)
+        print(initial_state.board.get_value(2,2))
+        result_state = problem.result(initial_state, (2, 2, True))
+        print(result_state.board.get_value(2, 2))
 
-if __name__ == "__main__":
-    main()
-
-"""
 class PipeManiaState:
     state_id = 0
 
@@ -81,22 +84,6 @@ class PipeManiaState:
         # de abertos nas procuras informadas.
         return self.id < other.id
 
-class Board:
-    # Representação interna de uma grelha de PipeMania.
-
-    def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
-        # Devolve os valores imediatamente acima e abaixo,
-        # respectivamente.
-        # TODO
-        pass
-
-    def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
-        # Devolve os valores imediatamente à esquerda e à direita,
-        # respectivamente.
-        # TODO
-        pass
-        # TODO: outros metodos da classe
-
     @staticmethod
     def parse_instance():
         # Lê a instância do problema do standard input (stdin)
@@ -109,27 +96,45 @@ class Board:
         pass
 
 class PipeMania(Problem):
-    def __init__(self, initial_state: Board, goal_state: Board):
+    def __init__(self, initial_state: Board):
         # O construtor especifica o estado inicial.
+        self.initial_state = initial_state
+
         # TODO
         pass
 
-    def actions(self, state: State):
+    def actions(self, state: PipeManiaState):
         # Retorna uma lista de ações que podem ser executadas a
         # partir do estado passado como argumento.
         # TODO
+
         pass
 
-    def result(self, state: State, action):
+    def result(self, state: PipeManiaState, action: tuple):
         # Retorna o estado resultante de executar a 'action' sobre
         # 'state' passado como argumento. A ação a executar deve ser uma
         # das presentes na lista obtida pela execução de
         # self.actions(state).
         # TODO
-        pass
+        positions = "ECDB"
+        block = state.board.get_value(action[0], action[1])
+        index = positions.find(block[1])
+        if(action[2]):
+            if(index == 3):
+                state.board.matrix[action[0]][action[1]] = block[0] + positions[0]
+            else:
+                state.board.matrix[action[0]][action[1]] = block[0] + positions[index + 1]
+        else:
+            if(index == 0):
+                state.board.matrix[action[0]][action[1]] = block[0] + positions[3]
+            else:
+                state.board.matrix[action[0]][action[1]] = block[0] + positions[index - 1]
+        return state
     
     def h(self, node: Node):
         # Função heuristica utilizada para a procura A*.
         # TODO
         pass
-"""
+
+if __name__ == "__main__":
+    main()
