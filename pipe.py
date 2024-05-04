@@ -54,23 +54,6 @@ class Board:
             matrix.append(row.split())
         return Board(matrix)
 
-def main():
-        board = Board.parse_instance()
-        print("\nmatrix:")
-        print(board.matrix[0][0], board.matrix[0][1], board.matrix[0][2])
-        print(board.matrix[1][0], board.matrix[1][1], board.matrix[1][2])
-        print(board.matrix[2][0], board.matrix[2][1], board.matrix[2][2])
-        print("\nadjacent values:")
-        print(board.adjacent_vertical_values(0, 0))
-        print(board.adjacent_horizontal_values(0, 0))
-        print(board.adjacent_vertical_values(1, 1))
-        print(board.adjacent_horizontal_values(1, 1))
-        problem = PipeMania(board)
-        initial_state = PipeManiaState(board)
-        print(initial_state.board.get_value(2,2))
-        result_state = problem.result(initial_state, (2, 2, True))
-        print(result_state.board.get_value(2, 2))
-
 class PipeManiaState:
     state_id = 0
 
@@ -99,7 +82,7 @@ class PipeMania(Problem):
     def __init__(self, initial_state: Board):
         # O construtor especifica o estado inicial.
         self.initial_state = initial_state
-
+        self.actions_list = []
         # TODO
         pass
 
@@ -107,8 +90,15 @@ class PipeMania(Problem):
         # Retorna uma lista de ações que podem ser executadas a
         # partir do estado passado como argumento.
         # TODO
-
-        pass
+        actions = []
+        for x in range(state.board.rows):
+            for y in range(state.board.cols):
+                tuplo_true = (x, y, True)
+                tuplo_false = (x, y, False)
+                actions.append(tuplo_true)
+                actions.append(tuplo_false)
+        self.actions_list = actions  # Update the actions list attribute
+        return actions
 
     def result(self, state: PipeManiaState, action: tuple):
         # Retorna o estado resultante de executar a 'action' sobre
@@ -135,6 +125,29 @@ class PipeMania(Problem):
         # Função heuristica utilizada para a procura A*.
         # TODO
         pass
+
+def main():
+    board = Board.parse_instance()
+    print("\nmatrix:")
+    print(board.matrix[0][0], board.matrix[0][1], board.matrix[0][2])
+    print(board.matrix[1][0], board.matrix[1][1], board.matrix[1][2])
+    print(board.matrix[2][0], board.matrix[2][1], board.matrix[2][2])
+    print("\nadjacent values:")
+    print(board.adjacent_vertical_values(0, 0))
+    print(board.adjacent_horizontal_values(0, 0))
+    print(board.adjacent_vertical_values(1, 1))
+    print(board.adjacent_horizontal_values(1, 1))
+    problem = PipeMania(board)
+    initial_state = PipeManiaState(board)
+    print(initial_state.board.get_value(2,2))
+    result_state = problem.result(initial_state, (2, 2, True))
+    print(result_state.board.get_value(2, 2))
+    # Chamando a função actions para gerar a lista de ações
+    actions = problem.actions(initial_state)
+
+    # Imprimindo o atributo actions_list da classe PipeMania
+    print("Actions list:")
+    print(problem.actions_list)
 
 if __name__ == "__main__":
     main()
