@@ -28,17 +28,17 @@ class Board:
             return ("None", "None")
         if row-1 < 0:
             return ("None", self.matrix[row+1][col])
-        if row+1 > self.rows:
+        if row+1 >= self.rows:
             return (self.matrix[row-1][col], "None")
         else:
             return (self.matrix[row-1][col], self.matrix[row+1][col])
     
     def adjacent_horizontal_values(self, row: int, col: int):
-        if col-1 < 0 and col+1 > self.rows:
+        if col-1 < 0 and col+1 > self.cols:
             return ("None", "None")
         if col-1 < 0:
             return ("None", self.matrix[row][col+1])
-        if col+1 > self.rows:
+        if col+1 >= self.cols:
             return (self.matrix[row][col-1], "None")
         else:
             return (self.matrix[row][col-1], self.matrix[row][col+1])
@@ -53,6 +53,23 @@ class Board:
         for row in rows:
             matrix.append(row.split())
         return Board(matrix)
+
+def main():
+        board = Board.parse_instance()
+        print("\nmatrix:")
+        print(board.matrix[0][0], board.matrix[0][1], board.matrix[0][2])
+        print(board.matrix[1][0], board.matrix[1][1], board.matrix[1][2])
+        print(board.matrix[2][0], board.matrix[2][1], board.matrix[2][2])
+        print("\nadjacent values:")
+        print(board.adjacent_vertical_values(0, 0))
+        print(board.adjacent_horizontal_values(0, 0))
+        print(board.adjacent_vertical_values(1, 1))
+        print(board.adjacent_horizontal_values(1, 1))
+        problem = PipeMania(board)
+        initial_state = PipeManiaState(board)
+        print(initial_state.board.get_value(2,2))
+        result_state = problem.result(initial_state, (2, 2, "C"))
+        print(result_state.board.get_value(2, 2))
 
 class PipeManiaState:
     state_id = 0
@@ -82,7 +99,7 @@ class PipeMania(Problem):
     def __init__(self, initial_state: Board):
         # O construtor especifica o estado inicial.
         self.initial_state = initial_state
-        self.actions_list = []
+
         # TODO
         pass
 
@@ -91,13 +108,24 @@ class PipeMania(Problem):
         # partir do estado passado como argumento.
         # TODO
         actions = []
-        for x in range(state.board.rows):
-            for y in range(state.board.cols):
-                tuplo_true = (x, y, True)
-                tuplo_false = (x, y, False)
-                actions.append(tuplo_true)
-                actions.append(tuplo_false)
-        self.actions_list = actions  # Update the actions list attribute
+        for row in range(state.board.rows):
+            for col in range(state.board.cols):
+                positions = "ECDB"
+                block = state.board.get_value(row, col)
+                positions = positions.replace(block[1], "")
+                vertical_values = state.board.adjacent_vertical_values(row, col)
+                horizontal_values = state.board.adjacent_horizontal_values(row, col)
+                if vertical_values[0] == "None":
+                    positions = positions.replace("C", "")
+                if vertical_values[1] == "None":
+                    positions = positions.replace("B", "")
+                if horizontal_values[0] == "None":
+                    positions = positions.replace("E", "")
+                if horizontal_values[1] == "None":
+                    positions = positions.replace("D", "")
+                for character in positions:
+                    actions.append((row, col, character))
+        print(actions)
         return actions
 
     def result(self, state: PipeManiaState, action: tuple):
@@ -106,48 +134,17 @@ class PipeMania(Problem):
         # das presentes na lista obtida pela execução de
         # self.actions(state).
         # TODO
-        positions = "ECDB"
-        block = state.board.get_value(action[0], action[1])
-        index = positions.find(block[1])
-        if(action[2]):
-            if(index == 3):
-                state.board.matrix[action[0]][action[1]] = block[0] + positions[0]
-            else:
-                state.board.matrix[action[0]][action[1]] = block[0] + positions[index + 1]
+        if (action in self.actions(state)):
+            new_state = PipeManiaState(state.board)
+            new_state.board.matrix[action[0]][action[1]] = new_state.board.matrix[action[0]][action[1]][0] + action[2]
+            return new_state
         else:
-            if(index == 0):
-                state.board.matrix[action[0]][action[1]] = block[0] + positions[3]
-            else:
-                state.board.matrix[action[0]][action[1]] = block[0] + positions[index - 1]
-        return state
+            return state
     
     def h(self, node: Node):
         # Função heuristica utilizada para a procura A*.
         # TODO
         pass
-
-def main():
-    board = Board.parse_instance()
-    print("\nmatrix:")
-    print(board.matrix[0][0], board.matrix[0][1], board.matrix[0][2])
-    print(board.matrix[1][0], board.matrix[1][1], board.matrix[1][2])
-    print(board.matrix[2][0], board.matrix[2][1], board.matrix[2][2])
-    print("\nadjacent values:")
-    print(board.adjacent_vertical_values(0, 0))
-    print(board.adjacent_horizontal_values(0, 0))
-    print(board.adjacent_vertical_values(1, 1))
-    print(board.adjacent_horizontal_values(1, 1))
-    problem = PipeMania(board)
-    initial_state = PipeManiaState(board)
-    print(initial_state.board.get_value(2,2))
-    result_state = problem.result(initial_state, (2, 2, True))
-    print(result_state.board.get_value(2, 2))
-    # Chamando a função actions para gerar a lista de ações
-    actions = problem.actions(initial_state)
-
-    # Imprimindo o atributo actions_list da classe PipeMania
-    print("Actions list:")
-    print(problem.actions_list)
 
 if __name__ == "__main__":
     main()
