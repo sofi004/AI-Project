@@ -18,11 +18,10 @@ from search import (
 
 class Board:
 
-    def __init__(self, matrix=None, transformed=None):
+    def __init__(self, matrix=None):
         self.matrix = matrix
         self.rows = len(matrix)
         self.cols = len(matrix[0])
-        self.transformed = transformed
     
     def adjacent_vertical_values(self, row: int, col: int):
         if row-1 < 0 and row+1 > self.rows:
@@ -47,30 +46,35 @@ class Board:
     def get_value(self, row, col):
         return self.matrix[row][col]
     
+    @staticmethod
     def parse_instance():
         matrix = []
         transformed = []
-        dict = {'FC': (0, 1, 0, 0), 'FB': (0, 0, 0, 1), 'FE': (1, 0, 0, 0), 'FD': (0, 0, 1, 0),
-                'BC': (1, 1, 1, 0), 'BB': (1, 0, 1, 1), 'BE': (1, 1, 0, 1), 'BD': (0, 1, 1, 1),
-                'VC': (1, 1, 0, 0), 'VB': (0, 0, 1, 1), 'VE': (1, 0, 0, 1), 'VD': (0, 1, 1, 0),
-                'LH': (1, 0, 1, 0), 'LV': (0, 1, 0, 1)}
         rows = stdin.read().strip().split('\n')
         for row in rows:
             matrix.append(row.split())
-        for x in range(len(matrix)):
-            transformed_row = []
-            for y in range(len(matrix[0])):
-                if matrix[x][y] in dict:
-                    transformed_row.append(dict.get(matrix[x][y]))
-                else:
-                    # If column not found in dictionary, assign a default value
-                    transformed_row.append(matrix[x][y])
-            transformed.append(transformed_row)
-        return Board(matrix, transformed)
+        return Board(matrix)
+
+def main():
+        board = Board.parse_instance()
+        print("\nmatrix:")
+        print(board.matrix[0][0], board.matrix[0][1], board.matrix[0][2])
+        print(board.matrix[1][0], board.matrix[1][1], board.matrix[1][2])
+        print(board.matrix[2][0], board.matrix[2][1], board.matrix[2][2])
+        print("\nadjacent values:")
+        print(board.adjacent_vertical_values(0, 0))
+        print(board.adjacent_horizontal_values(0, 0))
+        print(board.adjacent_vertical_values(1, 1))
+        print(board.adjacent_horizontal_values(1, 1))
+        problem = PipeMania(board)
+        initial_state = PipeManiaState(board)
+        print(initial_state.board.get_value(2,2))
+        result_state = problem.result(initial_state, (2, 2, "C"))
+        print(result_state.board.get_value(2, 2))
 
 class PipeManiaState:
     state_id = 0
-    
+
     def __init__(self, board):
         self.board = board
         self.id = PipeManiaState.state_id
@@ -95,7 +99,7 @@ class PipeManiaState:
 class PipeMania(Problem):
     def __init__(self, initial_state: Board):
         # O construtor especifica o estado inicial.
-        self.initial = initial_state
+        self.initial_state = initial_state
 
         # TODO
         pass
@@ -142,30 +146,6 @@ class PipeMania(Problem):
         # Função heuristica utilizada para a procura A*.
         # TODO
         pass
-
-def main():
-    board = Board.parse_instance()
-    print("\nmatrix:")
-    print(board.matrix[0][0], board.matrix[0][1], board.matrix[0][2])
-    print(board.matrix[1][0], board.matrix[1][1], board.matrix[1][2])
-    print(board.matrix[2][0], board.matrix[2][1], board.matrix[2][2])
-    print("\ntransformed_matrix:\n")
-    print(board.transformed[0][0], board.transformed[0][1], board.transformed[0][2])
-    print(board.transformed[1][0], board.transformed[1][1], board.transformed[1][2])
-    print(board.transformed[2][0], board.transformed[2][1], board.transformed[2][2])
-    print("\nadjacent values:")
-    print(board.adjacent_vertical_values(0, 0))
-    print(board.adjacent_horizontal_values(0, 0))
-    print(board.adjacent_vertical_values(1, 1))
-    print(board.adjacent_horizontal_values(1, 1))
-    problem = PipeMania(board)
-    initial_state = PipeManiaState(board)
-    print(initial_state.board.get_value(2,2))
-    result_state = problem.result(initial_state, (2, 2, "C"))
-    print(result_state.board.get_value(2, 2))
-
-    result = depth_first_tree_search(problem)
-    print(result)
 
 if __name__ == "__main__":
     main()
