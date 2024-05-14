@@ -69,17 +69,19 @@ class Board:
     
     def final_matrix(self):
         final_string = ""
-        dict = {[0, 1, 0, 0]: 'FC', [0, 0, 0, 1]: 'FB', [1, 0, 0, 0]: 'FE', [0, 0, 1, 0]: 'FD',
-                [1, 1, 1, 0]: 'BC', [1, 0, 1, 1]: 'BB', [1, 1, 0, 1]: 'BE', [0, 1, 1, 1]: 'BD',
-                [1, 1, 0, 0]: 'VC', [0, 0, 1, 1]: 'VB', [1, 0, 0, 1]: 'VE', [0, 1, 1, 0]: 'VD',
-                [1, 0, 1, 0]: 'LH', [0, 1, 0, 1]: 'LV'}
+        dict = {(0, 1, 0, 0): 'FC', (0, 0, 0, 1): 'FB', (1, 0, 0, 0): 'FE', (0, 0, 1, 0): 'FD',
+                (1, 1, 1, 0): 'BC', (1, 0, 1, 1): 'BB', (1, 1, 0, 1): 'BE', (0, 1, 1, 1): 'BD',
+                (1, 1, 0, 0): 'VC', (0, 0, 1, 1): 'VB', (1, 0, 0, 1): 'VE', (0, 1, 1, 0): 'VD',
+                (1, 0, 1, 0): 'LH', (0, 1, 0, 1): 'LV'}
         
         for x in range(self.rows):
             for y in range(self.cols):
                 if y != self.cols - 1:
-                    final_string += dict.get(self.transformed[x][y][0]) + "\t"
+                    final_string += dict.get(tuple(self.transformed[x][y][0])) + "\t"
+                elif y == self.cols - 1 and x != self.rows - 1:
+                    final_string += dict.get(tuple(self.transformed[x][y][0])) + "\n"
                 else:
-                    final_string += dict.get(self.transformed[x][y][0]) + "\n"
+                    final_string += dict.get(tuple(self.transformed[x][y][0]))
         
         return final_string
     
@@ -295,14 +297,10 @@ class PipeMania(Problem):
             index += 1
         
         #actions_sorted = actions_sorted[index:]
-        print("\n actions_sorted_final:\n", actions_sorted)
-        print(len(actions_sorted))
 
         for row1 in range(state.board.rows): 
             for col1 in range(state.board.cols):
                 for itemx in actions_sorted:
-                    print("Board:", state.board.transformed[row1][col1][2])
-                    print("Itemx:", itemx[2])
                     if itemx[2] == state.board.transformed[row1][col1][0] and itemx[0] == row1 and itemx[1] == col1:
                         actions_sorted.remove(itemx)
         return actions_sorted  
@@ -328,7 +326,6 @@ class PipeMania(Problem):
             return state
     
     def goal_test(self, state):
-        print("BAD CONECTIONS: ", state.board.total_bad_connections)
         return state.board.total_bad_connections == 0
     
     def h(self, node: Node):
@@ -337,16 +334,9 @@ class PipeMania(Problem):
     
 def main():
         board = Board.parse_instance()
-        print("\nadjacent values:")
-        print(board.adjacent_vertical_values(0, 0))
-        print(board.adjacent_horizontal_values(0, 0))
-        print(board.adjacent_vertical_values(1, 1))
-        print(board.adjacent_horizontal_values(1, 1))
+
         problem = PipeMania(board)
-        initial_state = PipeManiaState(board)
-        print(initial_state.board.transformed[0][0])
-        result_state = problem.result(initial_state, (0, 0, [0, 0, 1, 0], 4))
-        print(result_state.board.transformed[0][0])
+
         result = depth_first_tree_search(problem)
         print(result.state.board.final_matrix())
 
