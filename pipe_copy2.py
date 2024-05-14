@@ -67,6 +67,22 @@ class Board:
         
         return bad_connections
     
+    def final_matrix(self):
+        final_string = ""
+        dict = {[0, 1, 0, 0]: 'FC', [0, 0, 0, 1]: 'FB', [1, 0, 0, 0]: 'FE', [0, 0, 1, 0]: 'FD',
+                [1, 1, 1, 0]: 'BC', [1, 0, 1, 1]: 'BB', [1, 1, 0, 1]: 'BE', [0, 1, 1, 1]: 'BD',
+                [1, 1, 0, 0]: 'VC', [0, 0, 1, 1]: 'VB', [1, 0, 0, 1]: 'VE', [0, 1, 1, 0]: 'VD',
+                [1, 0, 1, 0]: 'LH', [0, 1, 0, 1]: 'LV'}
+        
+        for x in range(self.rows):
+            for y in range(self.cols):
+                if y != self.cols - 1:
+                    final_string += dict.get(self.transformed[x][y][0]) + "\t"
+                else:
+                    final_string += dict.get(self.transformed[x][y][0]) + "\n"
+        
+        return final_string
+    
     @staticmethod
     def parse_instance():
         matrix = []
@@ -86,21 +102,7 @@ class Board:
 
 
         return Board(transformed)
-
-def main():
-        board = Board.parse_instance()
-        print("\nadjacent values:")
-        print(board.adjacent_vertical_values(0, 0))
-        print(board.adjacent_horizontal_values(0, 0))
-        print(board.adjacent_vertical_values(1, 1))
-        print(board.adjacent_horizontal_values(1, 1))
-        problem = PipeMania(board)
-        initial_state = PipeManiaState(board)
-        print(initial_state.board.transformed[0][0])
-        result_state = problem.result(initial_state, (0, 0, [0, 0, 1, 0], 4))
-        print(result_state.board.transformed[0][0])
-        result = depth_first_tree_search(problem)
-        print(result.state.board.transformed)
+    
 
 class PipeManiaState:
     state_id = 0
@@ -332,6 +334,21 @@ class PipeMania(Problem):
     def h(self, node: Node):
         # Função heuristica utilizada para a procura A*.
         return node.state.board.total_bad_connections
+    
+def main():
+        board = Board.parse_instance()
+        print("\nadjacent values:")
+        print(board.adjacent_vertical_values(0, 0))
+        print(board.adjacent_horizontal_values(0, 0))
+        print(board.adjacent_vertical_values(1, 1))
+        print(board.adjacent_horizontal_values(1, 1))
+        problem = PipeMania(board)
+        initial_state = PipeManiaState(board)
+        print(initial_state.board.transformed[0][0])
+        result_state = problem.result(initial_state, (0, 0, [0, 0, 1, 0], 4))
+        print(result_state.board.transformed[0][0])
+        result = depth_first_tree_search(problem)
+        print(result.state.board.final_matrix())
 
 if __name__ == "__main__":
     main()
