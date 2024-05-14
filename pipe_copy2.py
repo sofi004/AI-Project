@@ -46,9 +46,6 @@ class Board:
             return (self.transformed[row][col-1], [[0, 0, 0, 0], 0])
         else:
             return (self.transformed[row][col-1], self.transformed[row][col+1])
-    
-    def get_total_bad_connections(self):
-        return self.total_bad_connections
         
     def verify_connections(self, row: int, col: int):
         bad_connections = 0
@@ -100,10 +97,10 @@ def main():
         problem = PipeMania(board)
         initial_state = PipeManiaState(board)
         print(initial_state.board.transformed[0][0])
-        result_state = problem.result(initial_state, (0, 0, [0, 0, 1, 0]))
+        result_state = problem.result(initial_state, (0, 0, [0, 0, 1, 0], 4))
         print(result_state.board.transformed[0][0])
         result = depth_first_tree_search(problem)
-        print(result)
+        print(result.state.board.transformed)
 
 class PipeManiaState:
     state_id = 0
@@ -132,7 +129,8 @@ class PipeManiaState:
 class PipeMania(Problem):
     def __init__(self, initial_state: Board): #goal_state: Board
         # O construtor especifica o estado inicial.
-        self.initial = initial_state
+        self.initial_sate = initial_state
+        self.initial = PipeManiaState(initial_state)
         #self.goal = goal_state
         # TODO
         pass
@@ -182,11 +180,8 @@ class PipeMania(Problem):
                     actions.append(new_item)
 
         actions_sorted = sorted(actions, key=lambda item: item[3])
-        print("\n actions_sorted_inicial:\n", actions_sorted)
-        print(len(actions_sorted)-3)
         index = 0
         while index < len(actions_sorted) and actions_sorted[index][3] == 1:
-            print("\n block 1:", actions_sorted[index][0], actions_sorted[index][1])
 
             if actions_sorted[index][2][0]:
                 count = 0
@@ -195,13 +190,11 @@ class PipeMania(Problem):
                         item_action[1] == actions_sorted[index][1] -1 and
                         item_action[2][2] == 0):
                         count += 1
-                        print("\nremoved0:", item_action)
                         actions_sorted.remove(item_action)
                 for item_action in actions_sorted:
                     if (item_action[0] == actions_sorted[index][0] and
                         item_action[1] == actions_sorted[index][1] -1):
                         item_action[3] -= count
-                print("alterated0:", actions_sorted)
             else:
                 count = 0
                 for item_action in actions_sorted:
@@ -209,13 +202,11 @@ class PipeMania(Problem):
                         item_action[1] == actions_sorted[index][1] -1 and
                         item_action[2][2] == 1):
                         count += 1
-                        print("\nremoved1:", item_action)
                         actions_sorted.remove(item_action)
                 for item_action in actions_sorted:
                     if (item_action[0] == actions_sorted[index][0] and
                         item_action[1] == actions_sorted[index][1] -1):
                         item_action[3] -= count
-                print("alterated1:", actions_sorted)
 
             if actions_sorted[index][2][1]:
                 count = 0
@@ -224,13 +215,11 @@ class PipeMania(Problem):
                         item_action[1] == actions_sorted[index][1] and
                         item_action[2][3] == 0):
                         count += 1
-                        print("\nremoved2:", item_action)
                         actions_sorted.remove(item_action)
                 for item_action in actions_sorted:
                     if (item_action[0] == actions_sorted[index][0] -1 and
                         item_action[1] == actions_sorted[index][1]):
                         item_action[3] -= count
-                print("alterated2:", actions_sorted)
             else:
                 count = 0
                 for item_action in actions_sorted:
@@ -238,13 +227,11 @@ class PipeMania(Problem):
                         item_action[1] == actions_sorted[index][1] and
                         item_action[2][3] == 1):
                         count += 1
-                        print("\nremoved3:", item_action)
                         actions_sorted.remove(item_action)
                 for item_action in actions_sorted:
                     if (item_action[0] == actions_sorted[index][0] -1 and
                         item_action[1] == actions_sorted[index][1]):
                         item_action[3] -= count
-                print("alterated3:", actions_sorted)
 
             if actions_sorted[index][2][2]:
                 count = 0
@@ -253,13 +240,11 @@ class PipeMania(Problem):
                         item_action[1] == actions_sorted[index][1] +1 and
                         item_action[2][0] == 0):
                         count += 1
-                        print("\nremoved4:", item_action)
                         actions_sorted.remove(item_action)
                 for item_action in actions_sorted:
                     if (item_action[0] == actions_sorted[index][0] and
                         item_action[1] == actions_sorted[index][1] +1):
                         item_action[3] -= count
-                print("alterated4:", actions_sorted)
             else:
                 count = 0
                 for item_action in actions_sorted:
@@ -267,13 +252,11 @@ class PipeMania(Problem):
                         item_action[1] == actions_sorted[index][1] +1 and
                         item_action[2][0] == 1):
                         count += 1
-                        print("\nremoved5:", item_action)
                         actions_sorted.remove(item_action)
                 for item_action in actions_sorted:
                     if (item_action[0] == actions_sorted[index][0] and
                         item_action[1] == actions_sorted[index][1] +1):
                         item_action[3] -= count
-                print("alterated5:", actions_sorted)
 
             if actions_sorted[index][2][3]:
                 count = 0
@@ -282,13 +265,11 @@ class PipeMania(Problem):
                         item_action[1] == actions_sorted[index][1] and
                         item_action[2][1] == 0):
                         count += 1
-                        print("\nremoved6:", item_action)
                         actions_sorted.remove(item_action)
                 for item_action in actions_sorted:
                     if (item_action[0] == actions_sorted[index][0] +1 and
                         item_action[1] == actions_sorted[index][1]):
                         item_action[3] -= count
-                print("alterated6:", actions_sorted)
             else:
                 count = 0
                 for item_action in actions_sorted:
@@ -296,32 +277,34 @@ class PipeMania(Problem):
                         item_action[1] == actions_sorted[index][1] and
                         item_action[2][1] == 1):
                         count += 1
-                        print("\nremoved7:", item_action)
                         actions_sorted.remove(item_action)
                 for item_action in actions_sorted:
                     if (item_action[0] == actions_sorted[index][0] +1 and
                         item_action[1] == actions_sorted[index][1]):
                         item_action[3] -= count
-                print("alterated7:", actions_sorted)
 
             old_actions = actions_sorted[:index+1]
             new_actions = actions_sorted[index+1:]
             new_actions_sorted = sorted(new_actions, key=lambda item: item[3])
             actions_sorted = old_actions + new_actions_sorted
-            print("\n actions_sorted_mid:\n", actions_sorted)
-            print(len(actions_sorted))
             if(len(actions_sorted) == (state.board.rows * state.board.cols)):
                 index = state.board.rows * state.board.cols
                 break
             index += 1
         
-        print("\n actions_sorted_final_c/1:\n", actions_sorted)
-        print(len(actions_sorted))
-        actions_sorted = actions_sorted[index:]
+        #actions_sorted = actions_sorted[index:]
         print("\n actions_sorted_final:\n", actions_sorted)
         print(len(actions_sorted))
+
+        for row1 in range(state.board.rows): 
+            for col1 in range(state.board.cols):
+                for itemx in actions_sorted:
+                    print("Board:", state.board.transformed[row1][col1][2])
+                    print("Itemx:", itemx[2])
+                    if itemx[2] == state.board.transformed[row1][col1][0] and itemx[0] == row1 and itemx[1] == col1:
+                        actions_sorted.remove(itemx)
         return actions_sorted  
-    
+
     def result(self, state: PipeManiaState, action: list):
         # Retorna o estado resultante de executar a 'action' sobre
         # 'state' passado como argumento. A ação a executar deve ser uma
@@ -342,12 +325,13 @@ class PipeMania(Problem):
         else:
             return state
     
-    def goal_test(self, state: PipeManiaState):
-        return state.board.get_total_bad_connections == 0
+    def goal_test(self, state):
+        print("BAD CONECTIONS: ", state.board.total_bad_connections)
+        return state.board.total_bad_connections == 0
     
     def h(self, node: Node):
         # Função heuristica utilizada para a procura A*.
-        return node.state.board.get_total_bad_connections
+        return node.state.board.total_bad_connections
 
 if __name__ == "__main__":
     main()
