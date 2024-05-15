@@ -103,7 +103,9 @@ class PipeMania(Problem):
         # Retorna uma lista de ações que podem ser executadas a
         # partir do estado passado como argumento.
         # TODO
-        pass
+        possible_matrix = []
+        if state.id == 1:
+
         
 
     def result(self, state: PipeManiaState, action: list):
@@ -121,6 +123,13 @@ class PipeMania(Problem):
                     new_row.append(item.copy())
                 new_matrix.append(new_row)
             new_matrix[action[0]][action[1]][0] = action[2]
+            self.possible_actions.remove(action[2])
+            item = self.possible_actions[0][3]
+            itr = 0
+            while item != 0:
+                new_matrix[self.possible_actions[itr][0]][self.possible_actions[itr][1]] = self.possible_actions[itr][2]
+                itr += 1
+            self.possible_actions = self.possible_actions[itr:]
             new_board = Board(new_matrix)
             new_state = PipeManiaState(new_board)
             return new_state
