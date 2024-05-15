@@ -17,75 +17,94 @@ from search import (
 )
 
 class Board:
-
-    def __init__(self, matrix=None, transformed=None, completed=None):
-        self.matrix = matrix
+    def __init__(self, transformed=None):
         self.transformed = transformed
-        self.completed = completed
-        self.rows = len(matrix)
-        self.cols = len(matrix[0])
+        self.rows = len(transformed)
+        self.cols = len(transformed[0])
+        self.total_bad_connections = 0
+
+        for row in range(self.rows):
+            for col in range(self.cols):
+                self.total_bad_connections += self.verify_connections(row, col)
     
     def adjacent_vertical_values(self, row: int, col: int):
         if row-1 < 0 and row+1 > self.rows:
-            return ("None", "None")
+            return ([[0, 0, 0, 0], 0], [[0, 0, 0, 0], 0])
         if row-1 < 0:
-            return ("None", self.transformed[row+1][col])
+            return ([[0, 0, 0, 0], 0], self.transformed[row+1][col])
         if row+1 >= self.rows:
-            return (self.transformed[row-1][col], "None")
+            return (self.transformed[row-1][col], [[0, 0, 0, 0], 0])
         else:
             return (self.transformed[row-1][col], self.transformed[row+1][col])
     
     def adjacent_horizontal_values(self, row: int, col: int):
         if col-1 < 0 and col+1 > self.cols:
-            return ("None", "None")
+            return ([[0, 0, 0, 0], 0], [[0, 0, 0, 0], 0])
         if col-1 < 0:
-            return ("None", self.transformed[row][col+1])
+            return ([[0, 0, 0, 0], 0], self.transformed[row][col+1])
         if col+1 >= self.cols:
-            return (self.transformed[row][col-1], "None")
+            return (self.transformed[row][col-1], [[0, 0, 0, 0], 0])
         else:
             return (self.transformed[row][col-1], self.transformed[row][col+1])
+        
+    def verify_connections(self, row: int, col: int):
+        bad_connections = 0
+
+        vertical_values = self.adjacent_vertical_values(row, col)
+        horizontal_values = self.adjacent_horizontal_values(row, col)
+        block = self.transformed[row][col][0]
+
+        if block[0] == 1 and block[0] != horizontal_values[0][0][2]:
+            bad_connections += 1
+        if block[1] == 1 and block[1] != vertical_values[0][0][3]:
+            bad_connections += 1
+        if block[2] == 1 and block[2] != horizontal_values[1][0][0]:
+            bad_connections += 1
+        if block[3] == 1 and block[3] != vertical_values[1][0][1]:
+            bad_connections += 1
+        
+        self.transformed[row][col][1] = bad_connections
+        
+        return bad_connections
     
-    def get_value(self, row, col):
-        return self.transformed[row][col]
+    def final_matrix(self):
+        final_string = ""
+        dict = {(0, 1, 0, 0): 'FC', (0, 0, 0, 1): 'FB', (1, 0, 0, 0): 'FE', (0, 0, 1, 0): 'FD',
+                (1, 1, 1, 0): 'BC', (1, 0, 1, 1): 'BB', (1, 1, 0, 1): 'BE', (0, 1, 1, 1): 'BD',
+                (1, 1, 0, 0): 'VC', (0, 0, 1, 1): 'VB', (1, 0, 0, 1): 'VE', (0, 1, 1, 0): 'VD',
+                (1, 0, 1, 0): 'LH', (0, 1, 0, 1): 'LV'}
+        
+        for x in range(self.rows):
+            for y in range(self.cols):
+                if y != self.cols - 1:
+                    final_string += dict.get(tuple(self.transformed[x][y][0])) + "\t"
+                elif y == self.cols - 1 and x != self.rows - 1:
+                    final_string += dict.get(tuple(self.transformed[x][y][0])) + "\n"
+                else:
+                    final_string += dict.get(tuple(self.transformed[x][y][0]))
+        
+        return final_string
     
     @staticmethod
     def parse_instance():
         matrix = []
         transformed = []
-        completed = []
-        dict = {'FC': [0, 1, 0, 0], 'FB': [0, 0, 0, 1], 'FE': [1, 0, 0, 0], 'FD': [0, 0, 1, 0],
-                'BC': [1, 1, 1, 0], 'BB': [1, 0, 1, 1], 'BE': [1, 1, 0, 1], 'BD': [0, 1, 1, 1],
-                'VC': [1, 1, 0, 0], 'VB': [0, 0, 1, 1], 'VE': [1, 0, 0, 1], 'VD': [0, 1, 1, 0],
-                'LH': [1, 0, 1, 0], 'LV': [0, 1, 0, 1]}
+        dict = {'FC': [[0, 1, 0, 0], 0, 4], 'FB': [[0, 0, 0, 1], 0, 4], 'FE': [[1, 0, 0, 0], 0, 4], 'FD': [[0, 0, 1, 0], 0, 4],
+                'BC': [[1, 1, 1, 0], 0, 4], 'BB': [[1, 0, 1, 1], 0, 4], 'BE': [[1, 1, 0, 1], 0, 4], 'BD': [[0, 1, 1, 1], 0, 4],
+                'VC': [[1, 1, 0, 0], 0, 4], 'VB': [[0, 0, 1, 1], 0, 4], 'VE': [[1, 0, 0, 1], 0, 4], 'VD': [[0, 1, 1, 0], 0, 4],
+                'LH': [[1, 0, 1, 0], 0, 2], 'LV': [[0, 1, 0, 1], 0, 2]}
         rows = stdin.read().strip().split('\n')
         for row in rows:
             matrix.append(row.split())
         for x in range(len(matrix)):
             transformed_row = []
-            completed_row = []
             for y in range(len(matrix[0])):
                 transformed_row.append(dict.get(matrix[x][y]))
-                completed_row.append([0])
             transformed.append(transformed_row)
-            completed.append(completed_row)
-        return Board(matrix, transformed, completed)
 
-def main():
-        board = Board.parse_instance()
-        print("\nmatrix:")
-        print(board.matrix[0][0], board.matrix[0][1], board.matrix[0][2])
-        print(board.matrix[1][0], board.matrix[1][1], board.matrix[1][2])
-        print(board.matrix[2][0], board.matrix[2][1], board.matrix[2][2])
-        print("\nadjacent values:")
-        print(board.adjacent_vertical_values(0, 0))
-        print(board.adjacent_horizontal_values(0, 0))
-        print(board.adjacent_vertical_values(1, 1))
-        print(board.adjacent_horizontal_values(1, 1))
-        problem = PipeMania(board)
-        initial_state = PipeManiaState(board)
-        print(initial_state.board.get_value(2,2))
-        result_state = problem.result(initial_state, (2, 2, [0, 1, 0, 0]))
-        print(result_state.board.get_value(2, 2))
+
+        return Board(transformed)
+    
 
 class PipeManiaState:
     state_id = 0
@@ -114,52 +133,177 @@ class PipeManiaState:
 class PipeMania(Problem):
     def __init__(self, initial_state: Board): #goal_state: Board
         # O construtor especifica o estado inicial.
-        self.initial = initial_state
+        self.initial_sate = initial_state
+        self.initial = PipeManiaState(initial_state)
         #self.goal = goal_state
         # TODO
         pass
-
+    
     def actions(self, state: PipeManiaState):
         # Retorna uma lista de ações que podem ser executadas a
         # partir do estado passado como argumento.
         # TODO
         actions = []
-        for row in range(state.board.rows):
+        for row in range(state.board.rows): 
             for col in range(state.board.cols):
+                row_actions = []
+                total_actions = 0 
+                block = state.board.transformed[row][col]
                 positions = [1, 1, 1, 1]
                 vertical_values = state.board.adjacent_vertical_values(row, col)
                 horizontal_values = state.board.adjacent_horizontal_values(row, col)
-                if vertical_values[0] == "None":
+                block = state.board.transformed[row][col][0]
+                if vertical_values[0][0] == [0, 0, 0, 0]:
                     positions[1] = 0
-                if vertical_values[1] == "None":
+                if vertical_values[1][0] == [0, 0, 0, 0]:
                     positions[3] = 0
-                if horizontal_values[0] == "None":
+                if horizontal_values[0][0] == [0, 0, 0, 0]:
                     positions[0] = 0
-                if horizontal_values[1] == "None":
+                if horizontal_values[1][0] == [0, 0, 0, 0]:
                     positions[2] = 0
                 
-                block = state.board.transformed[row][col]
                 if block == [0, 1, 0, 1] or block == [1, 0, 1, 0]:
-                    x = 1
+                    x = 2
                 else:
-                    x = 3
+                    x = 4
 
-                flag = 1
                 for _ in range(x):
-                    flag1 = 1
+                    possible_action = 1
                     block = block[-1:] + block[:-1]
                     for i in range(4):
                         if block[i] == 1 and positions[i] == 0:
-                            flag1 = 0
+                            possible_action = 0
                             break
-                    if flag1:
-                        actions.append((row, col, block))
-                        flag = 0
-                if flag:
-                    state.board.completed[row][col] = 1
-                    print("completo", row, col)
-        print(actions)
-        return actions
+                    if possible_action:
+                        total_actions += 1
+                        row_actions.append([row, col, block])
+
+                for item in row_actions:
+                    new_item = item[:]  
+                    new_item.append(total_actions)  
+                    actions.append(new_item)
+
+        actions_sorted = sorted(actions, key=lambda item: item[3])
+        index = 0
+        while index < len(actions_sorted) and actions_sorted[index][3] == 1:
+
+            if actions_sorted[index][2][0]:
+                count = 0
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] and
+                        item_action[1] == actions_sorted[index][1] -1 and
+                        item_action[2][2] == 0):
+                        count += 1
+                        actions_sorted.remove(item_action)
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] and
+                        item_action[1] == actions_sorted[index][1] -1):
+                        item_action[3] -= count
+            else:
+                count = 0
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] and
+                        item_action[1] == actions_sorted[index][1] -1 and
+                        item_action[2][2] == 1):
+                        count += 1
+                        actions_sorted.remove(item_action)
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] and
+                        item_action[1] == actions_sorted[index][1] -1):
+                        item_action[3] -= count
+
+            if actions_sorted[index][2][1]:
+                count = 0
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] -1 and
+                        item_action[1] == actions_sorted[index][1] and
+                        item_action[2][3] == 0):
+                        count += 1
+                        actions_sorted.remove(item_action)
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] -1 and
+                        item_action[1] == actions_sorted[index][1]):
+                        item_action[3] -= count
+            else:
+                count = 0
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] -1 and
+                        item_action[1] == actions_sorted[index][1] and
+                        item_action[2][3] == 1):
+                        count += 1
+                        actions_sorted.remove(item_action)
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] -1 and
+                        item_action[1] == actions_sorted[index][1]):
+                        item_action[3] -= count
+
+            if actions_sorted[index][2][2]:
+                count = 0
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] and
+                        item_action[1] == actions_sorted[index][1] +1 and
+                        item_action[2][0] == 0):
+                        count += 1
+                        actions_sorted.remove(item_action)
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] and
+                        item_action[1] == actions_sorted[index][1] +1):
+                        item_action[3] -= count
+            else:
+                count = 0
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] and
+                        item_action[1] == actions_sorted[index][1] +1 and
+                        item_action[2][0] == 1):
+                        count += 1
+                        actions_sorted.remove(item_action)
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] and
+                        item_action[1] == actions_sorted[index][1] +1):
+                        item_action[3] -= count
+
+            if actions_sorted[index][2][3]:
+                count = 0
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] +1 and
+                        item_action[1] == actions_sorted[index][1] and
+                        item_action[2][1] == 0):
+                        count += 1
+                        actions_sorted.remove(item_action)
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] +1 and
+                        item_action[1] == actions_sorted[index][1]):
+                        item_action[3] -= count
+            else:
+                count = 0
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] +1 and
+                        item_action[1] == actions_sorted[index][1] and
+                        item_action[2][1] == 1):
+                        count += 1
+                        actions_sorted.remove(item_action)
+                for item_action in actions_sorted:
+                    if (item_action[0] == actions_sorted[index][0] +1 and
+                        item_action[1] == actions_sorted[index][1]):
+                        item_action[3] -= count
+
+            old_actions = actions_sorted[:index+1]
+            new_actions = actions_sorted[index+1:]
+            new_actions_sorted = sorted(new_actions, key=lambda item: item[3])
+            actions_sorted = old_actions + new_actions_sorted
+            if(len(actions_sorted) == (state.board.rows * state.board.cols)):
+                index = state.board.rows * state.board.cols
+                break
+            index += 1
+        
+        #actions_sorted = actions_sorted[index:]
+
+        for row1 in range(state.board.rows): 
+            for col1 in range(state.board.cols):
+                for itemx in actions_sorted:
+                    if itemx[2] == state.board.transformed[row1][col1][0] and itemx[0] == row1 and itemx[1] == col1:
+                        actions_sorted.remove(itemx)
+        return actions_sorted  
 
     def result(self, state: PipeManiaState, action: list):
         # Retorna o estado resultante de executar a 'action' sobre
@@ -168,20 +312,33 @@ class PipeMania(Problem):
         # self.actions(state).
         # TODO
         if (action in self.actions(state)):
-            new_state = PipeManiaState(state.board)
-            new_state.board.transformed[action[0]][action[1]] = action[2]
+            new_transformed = []
+            for row in state.board.transformed:
+                new_row = []
+                for item in row:
+                    new_row.append(item.copy())
+                new_transformed.append(new_row)
+            new_transformed[action[0]][action[1]][0] = action[2]
+            new_board = Board(new_transformed)
+            new_state = PipeManiaState(new_board)
             return new_state
         else:
             return state
-    """
-    def goal_test(self, state: PipeManiaState):
-        if state.board.completed
-        pass
-    """
+    
+    def goal_test(self, state):
+        return state.board.total_bad_connections == 0
+    
     def h(self, node: Node):
         # Função heuristica utilizada para a procura A*.
-        # TODO
-        pass
+        return node.state.board.total_bad_connections
+    
+def main():
+        board = Board.parse_instance()
+
+        problem = PipeMania(board)
+
+        result = depth_first_tree_search(problem)
+        print(result.state.board.final_matrix())
 
 if __name__ == "__main__":
     main()
