@@ -17,11 +17,12 @@ from search import (
 )
 
 class Board:
-    def __init__(self, matrix=None):
+    def __init__(self, matrix=None, possible_matrix=None):
         self.matrix = matrix
         self.rows = len(matrix)
         self.cols = len(matrix[0])
         self.total_bad_connections = 0
+        self.possible_matrix = possible_matrix
 
     def adjacent_vertical_values(self, row: int, col: int):
         if row-1 < 0 and row+1 > self.rows:
@@ -94,7 +95,6 @@ class PipeMania(Problem):
         # O construtor especifica o estado inicial.
         self.initial_sate = initial_state
         self.initial = PipeManiaState(initial_state)
-        self.possible_actions = []
         #self.goal = goal_state
         # TODO
         pass
@@ -103,8 +103,43 @@ class PipeMania(Problem):
         # Retorna uma lista de ações que podem ser executadas a
         # partir do estado passado como argumento.
         # TODO
-        possible_matrix = []
         if state.id == 1:
+            for row in range(state.board.rows):
+                for col in range(state.board.cols):
+                    block_actions = []
+                    positions = [1, 1, 1, 1]
+                    vertical_values = state.board.adjacent_vertical_values(row, col)
+                    horizontal_values = state.board.adjacent_horizontal_values(row, col)
+                    block = state.board.matrix[row][col][0]
+                    if vertical_values[0][0] == [0, 0, 0, 0]:
+                        positions[1] = 0
+                    if vertical_values[1][0] == [0, 0, 0, 0]:
+                        positions[3] = 0
+                    if horizontal_values[0][0] == [0, 0, 0, 0]:
+                        positions[0] = 0
+                    if horizontal_values[1][0] == [0, 0, 0, 0]:
+                        positions[2] = 0
+                    
+                    if block == [0, 1, 0, 1] or block == [1, 0, 1, 0]:
+                        x = 2
+                    else:
+                        x = 4
+
+                    for _ in range(x):
+                        possible_action = 1
+                        block = block[-1:] + block[:-1]
+                        for i in range(4):
+                            if block[i] == 1 and positions[i] == 0:
+                                possible_action = 0
+                                break
+                        if possible_action:
+                            block_actions.append([row, col, block]) 
+
+                    for item in block_actions:
+                        item.append(len(block_actions))
+
+                    state.board.possible_matrix[row][col] = block_actions
+        else:
 
         
 
@@ -114,20 +149,34 @@ class PipeMania(Problem):
         # das presentes na lista obtida pela execução de
         # self.actions(state).
         # TODO
-        self.actions(state)
-        if (action in self.possible_actions):
+        actions_list = self.actions(state)
+        matrix = self.state.board.matrix
+        possible_matrix = self.state.board.possible_matrix
+        if (action in actions_list):
             new_matrix = []
-            for row in state.board.matrix:
+            new_possible_matrix = []
+            for row in range(state.board.rows):
                 new_row = []
-                for item in row:
-                    new_row.append(item.copy())
+                new_possible_row = []
+                for col in range(state.board.cols):
+                    for item in possible_matrix[row][col]:
+                        if item[0] != action[2]:
+                            new_possible_item = []
+                            new_possible_item.append(item[0].copy())
+                            new_possible_item.append(item[1].copy())
+                        new_possible_row.append(new_possible_item)
+                    new_item = []
+                    new_item.append(matrix[row][col][0].copy())
+                    new_item.append(matrix[row][col][1].copy())
+                    new_row.append(new_item)
                 new_matrix.append(new_row)
+                new_possible_matrix.append(new_row)
             new_matrix[action[0]][action[1]][0] = action[2]
-            self.possible_actions.remove(action[2])
-            item = self.possible_actions[0][3]
+            item = actions_list[0]
             itr = 0
-            while item != 0:
-                new_matrix[self.possible_actions[itr][0]][self.possible_actions[itr][1]] = self.possible_actions[itr][2]
+            while item[3] != 0:
+                new_matrix[actions_list[itr][0]][actions_list[itr][1]] = actions_list[itr][2]
+                new_possible_matrix[actions_list[itr][0]][actions_list[itr][1]]
                 itr += 1
             self.possible_actions = self.possible_actions[itr:]
             new_board = Board(new_matrix)
