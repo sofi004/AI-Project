@@ -130,9 +130,9 @@ class PipeMania(Problem):
                         positions[2] = 0
                     
                     if block == [0, 1, 0, 1] or block == [1, 0, 1, 0]:
-                        x = 1
+                        x = 2
                     else:
-                        x = 3
+                        x = 4
 
                     for _ in range(x): 
                         possible_action = 1
@@ -145,14 +145,17 @@ class PipeMania(Problem):
                             block_actions.append(block) 
 
                     lenght = len(block_actions)
+                    if(lenght == 1):
+                        only_way_actions.append([row, col])
+                        if(block_actions[0] == block):
+                            lenght = 0
+                            state.correct_blocks += 1
                     new_block_actions = []
                     new_block_actions.append(block_actions)
                     new_block_actions.append(lenght)
+                    state.board.possible_matrix[row][col] = []
                     state.board.possible_matrix[row][col].append(new_block_actions)
-                    if(block_actions == [] or lenght == 1):
-                        only_way_actions.append([row, col])
-                        if(lenght == 0):
-                            state.correct_blocks += 1
+                    print(new_block_actions)
 
             # ATÉ AQUI ESTÁ TUDO CERTO SÓ NÃO PERCEBO PORQUE É QUE O ACTIONS É CORRIDO DUAS VEZES COM STATE.ID = 0 SECALHAR É SUPOSTO GUARDAR MOS A actions_list PARA APROVEITARMOS ESSA PRIMEIRA VEZ QUE CORRE O ACTIONS E DEPOIS SÓ CHAMAR O ACTIONS NO RESULT APÓS TROCAR O ESTADO ID?
             
@@ -180,10 +183,11 @@ class PipeMania(Problem):
                                 if item[2] == 1:
                                     not_removed.remove(item)
                                     continue
-                        if not_removed == []:
+                        l = len(not_removed)
+                        if l == 1 and len(state.board.possible_matrix[x][y-1][0][0]) != 1:
                             only_way_actions.append([x,y-1])
                         state.board.possible_matrix[x][y-1][0][0] = not_removed
-                        state.board.possible_matrix[x][y-1][0][1] = len(not_removed)
+                        state.board.possible_matrix[x][y-1][0][1] = l
                 if x > 0:
                     if state.board.possible_matrix[x-1][y][0][1] != 0 or state.board.possible_matrix[x-1][y][0][1] != 1:
                         not_removed = []
@@ -197,10 +201,11 @@ class PipeMania(Problem):
                                 if item[3] == 1:
                                     not_removed.remove(item)
                                     continue
-                        if not_removed == []:
+                        l = len(not_removed)
+                        if l == 1 and len(state.board.possible_matrix[x-1][y][0][0]) != 1:
                             only_way_actions.append([x-1,y])
                         state.board.possible_matrix[x][y-1][0][0] = not_removed
-                        state.board.possible_matrix[x][y-1][0][1] = len(not_removed)
+                        state.board.possible_matrix[x][y-1][0][1] = l
                 if y < (num_col):
                     if state.board.possible_matrix[x][y+1][0][1] != 0 or state.board.possible_matrix[x][y+1][0][1] != 1:
                         not_removed = []
@@ -214,10 +219,11 @@ class PipeMania(Problem):
                                 if item[0] == 1:
                                     not_removed.remove(item)
                                     continue
-                        if not_removed == []:
+                        l = len(not_removed)
+                        if l == 1 and len(state.board.possible_matrix[x][y+1][0][0]) != 1:
                             only_way_actions.append([x,y+1])
                         state.board.possible_matrix[x][y-1][0][0] = not_removed
-                        state.board.possible_matrix[x][y-1][0][1] = len(not_removed)
+                        state.board.possible_matrix[x][y-1][0][1] = l
                 if x < (num_row):
                     if state.board.possible_matrix[x+1][y][0][1] != 0 or state.board.possible_matrix[x+1][y][0][1] != 1:
                         not_removed = []
@@ -231,21 +237,26 @@ class PipeMania(Problem):
                                 if item[1] == 1:
                                     not_removed.remove(item)
                                     continue
-                        if not_removed == []:
+                        l = len(not_removed)
+                        if l == 1 and len(state.board.possible_matrix[x+1][y][0][0]) != 1:
                             only_way_actions.append([x+1,y])
                         state.board.possible_matrix[x][y-1][0][0] = not_removed
-                        state.board.possible_matrix[x][y-1][0][1] = len(not_removed)
+                        state.board.possible_matrix[x][y-1][0][1] = l
                 index += 1
-            
-            # A PARTIR DAQUI E DENTRO DO ACTIONS ESTÁ TUDO BEM
-
+        # O CÓDIGO ENTRE ESTE COMENTÁRIO E O ANTERIOR DEVE ESTAR BEM, CONTUDO AINDA NÃO ESTIVE A VER COM TOTAL ATENÇÃO SE O OBTIDO REALMENTE É O SUPOSTO, MAS PARECE-ME QUE SIM
+        # FLATA RESTRINGIR PELA PEÇA QUE ANTERIORMENTE FOI TROCADA E VER OS SEUS VIZINHOS QUE CONSISTE EM CORRER O CÓDIGO A CIMA COM ONLY_WAY_ACTIONS SÓ COM A LINHA E COLUNA DA PÇA TROCADA ANTERIORMENTE, INICIALMENTE
+        # NAO SEI SE É NECESSÁRIO MAS VER O CASO EM QUE MESMO QUE HAJA MAIS QUE UMA AÇÃO POSSIVEL PARA UM BLOCO, SE AS AÇÕES TIVEREM DIREÇÕES COMUNS EM TODAS AS AÇÕES POSSIVEIS PODEMOS RESTRINGIR AS SUAS VIZINHAS COM BASE NO SITIO PARA ONDE ESSA PEÇA APONTA OU NÃO APONTA
+        # A PARTIR DAQUI E DENTRO DO ACTIONS ESTÁ TUDO BEM
         print("only_way_actions: ", only_way_actions)
         print("possible_matrix: ", state.board.possible_matrix)
         action_list = []
         for row in range(state.board.rows):
                 for col in range(state.board.cols):
                     for item in state.board.possible_matrix[row][col]:
-                        action_list.append(item)
+                        if item[1] != 0:
+                            for possible_action_block in item[0]:
+                                new_item = [row, col, possible_action_block, item[1]]
+                                action_list.append(new_item)
         print ("action_list: ", action_list)
         action_list_sorted = sorted(action_list, key=lambda item: item[1])
         print ("action_list_sorted: ", action_list_sorted)
@@ -265,11 +276,18 @@ class PipeMania(Problem):
             matrix = copy.deepcopy(state.board.matrix)
             possible_matrix = copy.deepcopy(state.board.possible_matrix)
             matrix[action[0]][action[1]][0] = action[2]
+            print(action[2])
+            print(possible_matrix[action[0]][action[1]])
+            possible_matrix[action[0]][action[1]][0][0].remove(action[2])
+            possible_matrix[action[0]][action[1]][0][1] -= 1
             new_board = Board(matrix, possible_matrix)
             new_state = PipeManiaState(new_board)
             return new_state
         else:
             return state
+        
+            # importantissimo implementar bem o while que está no código abaixo e ao mesmo tempo que fazemos o while ir atualizando o correct_blocks, para a heuristica e o test_goal funcionarem, enquanto isto não estiver feito é normal dar ciclo infinito
+            # OLHAR PARA O CÓDIGO A BAIXO E VER OQUE FALTA NO A CIMA E IMPLEMENTAR COMO DEVE DE SER
             """
             new_matrix = []
             new_possible_matrix = []
@@ -313,14 +331,14 @@ class PipeMania(Problem):
         """
     
     def goal_test(self, state):
-        if state.correct_blocks == (state.board.rows * state.board.cols):
+        if state.correct_blocks == (state.board.rows * state.board.cols): # OU VER QUANDO O NÚMERO DE AÇÕES POSSIVEIS FOR 0
             return True
         else:
             return False
     
     def h(self, node: Node):
         # Função heuristica utilizada para a procura A*.
-        return node.state.correct_blocks
+        return node.state.correct_blocks # OU UTILIZAR O NÚMERO DE AÇÕES POSSIVEIS, MAS ACHO QUE FAZ MAIS SENTIDO VER O NÚMERO DE PEÇAS QUE JÁ FORAM TROCADAS E QUE EFETIVAMENTE JÁ ESTÃO BEM NO BOARD
     
 def main():
         board = Board.parse_instance()
