@@ -180,7 +180,7 @@ class Board:
                             if item[3] == 0:
                                 not_removed.remove(item)
                                 continue
-                        else:
+                        else: 
                             if item[3] == 1:
                                 not_removed.remove(item)
                                 continue
