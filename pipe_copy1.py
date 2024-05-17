@@ -179,11 +179,12 @@ class Board:
                         if matrix[x][y][1] == 1:
                             if item[3] == 0:
                                 not_removed.remove(item)
-                                continue
+                                continue 
                         else: 
                             if item[3] == 1:
                                 not_removed.remove(item)
                                 continue
+                    print(l)
                     l = len(not_removed)
                     if l == 1 and len(possible_matrix[x-1][y][0][0]) != 1:
                         only_way_actions.append([x-1,y])
