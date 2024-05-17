@@ -86,16 +86,16 @@ class PipeManiaState:
     state_id = 0
     def __init__(self, board):
         self.correct_blocks = 0
-        self.only_one_action = 0
+        self.only_way_actions = []
         self.board = board
         self.id = PipeManiaState.state_id
         PipeManiaState.state_id += 1
+        self.parse_instance()
 
     def __lt__(self, other):
         # Este método é utilizado em caso de empate na gestão da lista
         # de abertos nas procuras informadas.
         return self.id < other.id
-
 
 class PipeMania(Problem):
     def __init__(self, initial_state: Board): #goal_state: Board
@@ -110,9 +110,11 @@ class PipeMania(Problem):
         # Retorna uma lista de ações que podem ser executadas a
         # partir do estado passado como argumento.
         # TODO
-        only_way_actions = []
         print("state id actions: ", state.id)
         if state.id == 0:
+            """
+            correct_blocks = 0
+            only_way_actions = []
             for row in range(state.board.rows):
                 for col in range(state.board.cols):
                     block_actions = []
@@ -147,18 +149,18 @@ class PipeMania(Problem):
                     lenght = len(block_actions)
                     if(lenght == 1):
                         only_way_actions.append([row, col])
-                        if(block_actions[0] == block):
+                        if(block_actions[0] == state.board.matrix[row][col]):
                             lenght = 0
-                            state.correct_blocks += 1
+                            correct_blocks += 1
                     new_block_actions = []
                     new_block_actions.append(block_actions)
                     new_block_actions.append(lenght)
                     state.board.possible_matrix[row][col] = []
                     state.board.possible_matrix[row][col].append(new_block_actions)
-                    print(new_block_actions)
+            state.correct_blocks = correct_blocks
+            print("state.correct_blocks id = 0: ", state.correct_blocks)
 
             # ATÉ AQUI ESTÁ TUDO CERTO SÓ NÃO PERCEBO PORQUE É QUE O ACTIONS É CORRIDO DUAS VEZES COM STATE.ID = 0 SECALHAR É SUPOSTO GUARDAR MOS A actions_list PARA APROVEITARMOS ESSA PRIMEIRA VEZ QUE CORRE O ACTIONS E DEPOIS SÓ CHAMAR O ACTIONS NO RESULT APÓS TROCAR O ESTADO ID?
-            
             
             print("only_way_actions0: ", only_way_actions)
             print("possible_matrix0: ", state.board.possible_matrix)
@@ -166,10 +168,8 @@ class PipeMania(Problem):
             num_col = (len(state.board.possible_matrix[0]) - 1)
             index = 0
             while index < len(only_way_actions):
-                print("index: ", index)
                 x = only_way_actions[index][0]
                 y = only_way_actions[index][1]
-                print("x,y:" ,x,y)
                 if y > 0:
                     if state.board.possible_matrix[x][y-1][0][1] != 0 or state.board.possible_matrix[x][y-1][0][1] != 1:
                         not_removed = []
@@ -243,23 +243,26 @@ class PipeMania(Problem):
                         state.board.possible_matrix[x][y-1][0][0] = not_removed
                         state.board.possible_matrix[x][y-1][0][1] = l
                 index += 1
-        # O CÓDIGO ENTRE ESTE COMENTÁRIO E O ANTERIOR DEVE ESTAR BEM, CONTUDO AINDA NÃO ESTIVE A VER COM TOTAL ATENÇÃO SE O OBTIDO REALMENTE É O SUPOSTO, MAS PARECE-ME QUE SIM
-        # FLATA RESTRINGIR PELA PEÇA QUE ANTERIORMENTE FOI TROCADA E VER OS SEUS VIZINHOS QUE CONSISTE EM CORRER O CÓDIGO A CIMA COM ONLY_WAY_ACTIONS SÓ COM A LINHA E COLUNA DA PÇA TROCADA ANTERIORMENTE, INICIALMENTE
-        # NAO SEI SE É NECESSÁRIO MAS VER O CASO EM QUE MESMO QUE HAJA MAIS QUE UMA AÇÃO POSSIVEL PARA UM BLOCO, SE AS AÇÕES TIVEREM DIREÇÕES COMUNS EM TODAS AS AÇÕES POSSIVEIS PODEMOS RESTRINGIR AS SUAS VIZINHAS COM BASE NO SITIO PARA ONDE ESSA PEÇA APONTA OU NÃO APONTA
-        # A PARTIR DAQUI E DENTRO DO ACTIONS ESTÁ TUDO BEM
-        print("only_way_actions: ", only_way_actions)
-        print("possible_matrix: ", state.board.possible_matrix)
-        action_list = []
-        for row in range(state.board.rows):
-                for col in range(state.board.cols):
-                    for item in state.board.possible_matrix[row][col]:
-                        if item[1] != 0:
-                            for possible_action_block in item[0]:
-                                new_item = [row, col, possible_action_block, item[1]]
-                                action_list.append(new_item)
-        print ("action_list: ", action_list)
-        action_list_sorted = sorted(action_list, key=lambda item: item[1])
-        print ("action_list_sorted: ", action_list_sorted)
+            state.only_way_actions = only_way_actions
+            # O CÓDIGO ENTRE ESTE COMENTÁRIO E O ANTERIOR DEVE ESTAR BEM, CONTUDO AINDA NÃO ESTIVE A VER COM TOTAL ATENÇÃO SE O OBTIDO REALMENTE É O SUPOSTO, MAS PARECE-ME QUE SIM
+            # FLATA RESTRINGIR PELA PEÇA QUE ANTERIORMENTE FOI TROCADA E VER OS SEUS VIZINHOS QUE CONSISTE EM CORRER O CÓDIGO A CIMA COM ONLY_WAY_ACTIONS SÓ COM A LINHA E COLUNA DA PÇA TROCADA ANTERIORMENTE, INICIALMENTE
+            # NAO SEI SE É NECESSÁRIO MAS VER O CASO EM QUE MESMO QUE HAJA MAIS QUE UMA AÇÃO POSSIVEL PARA UM BLOCO, SE AS AÇÕES TIVEREM DIREÇÕES COMUNS EM TODAS AS AÇÕES POSSIVEIS PODEMOS RESTRINGIR AS SUAS VIZINHAS COM BASE NO SITIO PARA ONDE ESSA PEÇA APONTA OU NÃO APONTA
+            # A PARTIR DAQUI E DENTRO DO ACTIONS ESTÁ TUDO BEM
+            print("only_way_actions: ", state.only_way_actions)
+            print("correct_blocks", state.correct_blocks)
+            print("possible_matrix: ", state.board.possible_matrix)
+            action_list = []
+            for row in range(state.board.rows):
+                    for col in range(state.board.cols):
+                        for item in state.board.possible_matrix[row][col]:
+                            if item[1] != 0:
+                                for possible_action_block in item[0]:
+                                    new_item = [row, col, possible_action_block, item[1]]
+                                    action_list.append(new_item)
+            print ("action_list: ", action_list)
+            action_list_sorted = sorted(action_list, key=lambda item: item[3])
+            print ("action_list_sorted: ", action_list_sorted)
+            """
         return action_list_sorted
 
         
@@ -270,18 +273,24 @@ class PipeMania(Problem):
         # das presentes na lista obtida pela execução de
         # self.actions(state).
         # TODO
-        actions_list = self.actions(state)
         print("result id: ", state.id)
+        actions_list = self.actions(state)
         if (action in actions_list):
             matrix = copy.deepcopy(state.board.matrix)
             possible_matrix = copy.deepcopy(state.board.possible_matrix)
             matrix[action[0]][action[1]][0] = action[2]
-            print(action[2])
-            print(possible_matrix[action[0]][action[1]])
             possible_matrix[action[0]][action[1]][0][0].remove(action[2])
             possible_matrix[action[0]][action[1]][0][1] -= 1
+            correct_blocks = copy.deepcopy(state.correct_blocks)
+            only_way_actions = copy.deepcopy(state.only_way_actions)
+            if (action[3] == 1):
+                correct_blocks += 1 
+                only_way_actions.append([action[0], action[1]])
             new_board = Board(matrix, possible_matrix)
             new_state = PipeManiaState(new_board)
+            print("new_state.id: ", new_state.id)
+            new_state.correct_blocks = correct_blocks
+            new_state.only_way_actions = only_way_actions
             return new_state
         else:
             return state
@@ -343,7 +352,7 @@ class PipeMania(Problem):
 def main():
         board = Board.parse_instance()
         problem = PipeMania(board)
-        result = depth_first_tree_search(problem)
+        result = greedy_search(problem)
         print(result.state.board.final_matrix())
 
 if __name__ == "__main__":
