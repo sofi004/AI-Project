@@ -166,7 +166,7 @@ class Board:
                             if item[2] == 1:
                                 not_removed.remove(item)
                                 continue
-                    l = len(not_removed)
+                    l = len(not_removed) 
                     if l == 1 and len(possible_matrix[x][y-1][0][0]) != 1:
                         only_way_actions.append([x,y-1])
                     possible_matrix[x][y-1][0][0] = not_removed
