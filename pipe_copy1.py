@@ -5,6 +5,7 @@
 # 106194 Sofia Dinis Pinto Piteira
 
 import sys
+import copy
 from sys import stdin
 from search import (
     Problem,
@@ -26,21 +27,21 @@ class Board:
 
     def adjacent_vertical_values(self, row: int, col: int):
         if row-1 < 0 and row+1 > self.rows:
-            return ([[0, 0, 0, 0], 0], [[0, 0, 0, 0], 0])
+            return ([0, 0, 0, 0], [0, 0, 0, 0])
         if row-1 < 0:
-            return ([[0, 0, 0, 0], 0], self.matrix[row+1][col])
+            return ([0, 0, 0, 0], self.matrix[row+1][col])
         if row+1 >= self.rows:
-            return (self.matrix[row-1][col], [[0, 0, 0, 0], 0])
+            return (self.matrix[row-1][col], [0, 0, 0, 0])
         else:
             return (self.matrix[row-1][col], self.matrix[row+1][col])
     
     def adjacent_horizontal_values(self, row: int, col: int):
         if col-1 < 0 and col+1 > self.cols:
-            return ([[0, 0, 0, 0], 0], [[0, 0, 0, 0], 0])
+            return ([0, 0, 0, 0], [0, 0, 0, 0])
         if col-1 < 0:
-            return ([[0, 0, 0, 0], 0], self.matrix[row][col+1])
+            return ([0, 0, 0, 0], self.matrix[row][col+1])
         if col+1 >= self.cols:
-            return (self.matrix[row][col-1], [[0, 0, 0, 0], 0])
+            return (self.matrix[row][col-1], [0, 0, 0, 0])
         else:
             return (self.matrix[row][col-1], self.matrix[row][col+1])
     
@@ -53,33 +54,39 @@ class Board:
         for x in range(self.rows):
             for y in range(self.cols):
                 if y != self.cols - 1:
-                    final_string += dict.get(tuple(self.matrix[x][y][0])) + "\t"
+                    final_string += dict.get(tuple(self.matrix[x][y])) + "\t"
                 elif y == self.cols - 1 and x != self.rows - 1:
-                    final_string += dict.get(tuple(self.matrix[x][y][0])) + "\n"
+                    final_string += dict.get(tuple(self.matrix[x][y])) + "\n"
                 else:
-                    final_string += dict.get(tuple(self.matrix[x][y][0]))
+                    final_string += dict.get(tuple(self.matrix[x][y]))
         return final_string
     
     @staticmethod
     def parse_instance():
         matrix = []
-        dict = {'FC': [[0, 1, 0, 0], 4], 'FB': [[0, 0, 0, 1], 4], 'FE': [[1, 0, 0, 0], 4], 'FD': [[0, 0, 1, 0], 4],
-                'BC': [[1, 1, 1, 0], 4], 'BB': [[1, 0, 1, 1], 4], 'BE': [[1, 1, 0, 1], 4], 'BD': [[0, 1, 1, 1], 4],
-                'VC': [[1, 1, 0, 0], 4], 'VB': [[0, 0, 1, 1], 4], 'VE': [[1, 0, 0, 1], 4], 'VD': [[0, 1, 1, 0], 4],
-                'LH': [[1, 0, 1, 0], 2], 'LV': [[0, 1, 0, 1], 2]}
+        possible_matrix = []
+        dict = {'FC': [0, 1, 0, 0], 'FB': [0, 0, 0, 1], 'FE': [1, 0, 0, 0], 'FD': [0, 0, 1, 0],
+                'BC': [1, 1, 1, 0], 'BB': [1, 0, 1, 1], 'BE': [1, 1, 0, 1], 'BD': [0, 1, 1, 1],
+                'VC': [1, 1, 0, 0], 'VB': [0, 0, 1, 1], 'VE': [1, 0, 0, 1], 'VD': [0, 1, 1, 0],
+                'LH': [1, 0, 1, 0], 'LV': [0, 1, 0, 1]}
         rows = stdin.read().strip().split('\n')
         for row in rows:
             matrix.append(row.split())
         for x in range(len(matrix)):
+            possible_matrix_row = []
             for y in range(len(matrix[0])):
+                possible_matrix_row.append([])
                 matrix[x][y] = dict.get(matrix[x][y])
-        return Board(matrix)
+            possible_matrix.append(possible_matrix_row)
+        print(possible_matrix)
+        return Board(matrix, possible_matrix)
     
 
 class PipeManiaState:
     state_id = 0
     def __init__(self, board):
-        self.is_goal = 0
+        self.correct_blocks = 0
+        self.only_one_action = 0
         self.board = board
         self.id = PipeManiaState.state_id
         PipeManiaState.state_id += 1
@@ -93,7 +100,7 @@ class PipeManiaState:
 class PipeMania(Problem):
     def __init__(self, initial_state: Board): #goal_state: Board
         # O construtor especifica o estado inicial.
-        self.initial_sate = initial_state
+        self.initial_state = initial_state
         self.initial = PipeManiaState(initial_state)
         #self.goal = goal_state
         # TODO
@@ -103,29 +110,31 @@ class PipeMania(Problem):
         # Retorna uma lista de ações que podem ser executadas a
         # partir do estado passado como argumento.
         # TODO
-        if state.id == 1:
+        only_way_actions = []
+        print("state id actions: ", state.id)
+        if state.id == 0:
             for row in range(state.board.rows):
                 for col in range(state.board.cols):
                     block_actions = []
                     positions = [1, 1, 1, 1]
                     vertical_values = state.board.adjacent_vertical_values(row, col)
                     horizontal_values = state.board.adjacent_horizontal_values(row, col)
-                    block = state.board.matrix[row][col][0]
-                    if vertical_values[0][0] == [0, 0, 0, 0]:
+                    block = state.board.matrix[row][col]
+                    if vertical_values[0] == [0, 0, 0, 0]:
                         positions[1] = 0
-                    if vertical_values[1][0] == [0, 0, 0, 0]:
+                    if vertical_values[1] == [0, 0, 0, 0]:
                         positions[3] = 0
-                    if horizontal_values[0][0] == [0, 0, 0, 0]:
+                    if horizontal_values[0] == [0, 0, 0, 0]:
                         positions[0] = 0
-                    if horizontal_values[1][0] == [0, 0, 0, 0]:
+                    if horizontal_values[1] == [0, 0, 0, 0]:
                         positions[2] = 0
                     
                     if block == [0, 1, 0, 1] or block == [1, 0, 1, 0]:
-                        x = 2
+                        x = 1
                     else:
-                        x = 4
+                        x = 3
 
-                    for _ in range(x):
+                    for _ in range(x): 
                         possible_action = 1
                         block = block[-1:] + block[:-1]
                         for i in range(4):
@@ -133,13 +142,114 @@ class PipeMania(Problem):
                                 possible_action = 0
                                 break
                         if possible_action:
-                            block_actions.append([row, col, block]) 
+                            block_actions.append(block) 
 
-                    for item in block_actions:
-                        item.append(len(block_actions))
+                    lenght = len(block_actions)
+                    new_block_actions = []
+                    new_block_actions.append(block_actions)
+                    new_block_actions.append(lenght)
+                    state.board.possible_matrix[row][col].append(new_block_actions)
+                    if(block_actions == [] or lenght == 1):
+                        only_way_actions.append([row, col])
+                        if(lenght == 0):
+                            state.correct_blocks += 1
 
-                    state.board.possible_matrix[row][col] = block_actions
-        else:
+            # ATÉ AQUI ESTÁ TUDO CERTO SÓ NÃO PERCEBO PORQUE É QUE O ACTIONS É CORRIDO DUAS VEZES COM STATE.ID = 0 SECALHAR É SUPOSTO GUARDAR MOS A actions_list PARA APROVEITARMOS ESSA PRIMEIRA VEZ QUE CORRE O ACTIONS E DEPOIS SÓ CHAMAR O ACTIONS NO RESULT APÓS TROCAR O ESTADO ID?
+            
+            
+            print("only_way_actions0: ", only_way_actions)
+            print("possible_matrix0: ", state.board.possible_matrix)
+            num_row = (len(state.board.possible_matrix) - 1)
+            num_col = (len(state.board.possible_matrix[0]) - 1)
+            index = 0
+            while index < len(only_way_actions):
+                print("index: ", index)
+                x = only_way_actions[index][0]
+                y = only_way_actions[index][1]
+                print("x,y:" ,x,y)
+                if y > 0:
+                    if state.board.possible_matrix[x][y-1][0][1] != 0 or state.board.possible_matrix[x][y-1][0][1] != 1:
+                        not_removed = []
+                        for item in state.board.possible_matrix[x][y-1][0][0]:
+                            not_removed = copy.deepcopy(state.board.possible_matrix[x][y-1][0][0])
+                            if state.board.matrix[x][y][0] == 1:
+                                if item[2] == 0:
+                                    not_removed.remove(item)
+                                    continue
+                            else:
+                                if item[2] == 1:
+                                    not_removed.remove(item)
+                                    continue
+                        if not_removed == []:
+                            only_way_actions.append([x,y-1])
+                        state.board.possible_matrix[x][y-1][0][0] = not_removed
+                        state.board.possible_matrix[x][y-1][0][1] = len(not_removed)
+                if x > 0:
+                    if state.board.possible_matrix[x-1][y][0][1] != 0 or state.board.possible_matrix[x-1][y][0][1] != 1:
+                        not_removed = []
+                        for item in state.board.possible_matrix[x-1][y][0][0]:
+                            not_removed = copy.deepcopy(state.board.possible_matrix[x-1][y][0][0])
+                            if state.board.matrix[x][y][1] == 1:
+                                if item[3] == 0:
+                                    not_removed.remove(item)
+                                    continue
+                            else:
+                                if item[3] == 1:
+                                    not_removed.remove(item)
+                                    continue
+                        if not_removed == []:
+                            only_way_actions.append([x-1,y])
+                        state.board.possible_matrix[x][y-1][0][0] = not_removed
+                        state.board.possible_matrix[x][y-1][0][1] = len(not_removed)
+                if y < (num_col):
+                    if state.board.possible_matrix[x][y+1][0][1] != 0 or state.board.possible_matrix[x][y+1][0][1] != 1:
+                        not_removed = []
+                        for item in state.board.possible_matrix[x][y+1][0][0]:
+                            not_removed = copy.deepcopy(state.board.possible_matrix[x][y+1][0][0])
+                            if state.board.matrix[x][y][2] == 1:
+                                if item[0] == 0:
+                                    not_removed.remove(item)
+                                    continue
+                            else:
+                                if item[0] == 1:
+                                    not_removed.remove(item)
+                                    continue
+                        if not_removed == []:
+                            only_way_actions.append([x,y+1])
+                        state.board.possible_matrix[x][y-1][0][0] = not_removed
+                        state.board.possible_matrix[x][y-1][0][1] = len(not_removed)
+                if x < (num_row):
+                    if state.board.possible_matrix[x+1][y][0][1] != 0 or state.board.possible_matrix[x+1][y][0][1] != 1:
+                        not_removed = []
+                        for item in state.board.possible_matrix[x+1][y][0][0]:
+                            not_removed = copy.deepcopy(state.board.possible_matrix[x+1][y][0][0])
+                            if state.board.matrix[x][y][3] == 1:
+                                if item[1] == 0:
+                                    not_removed.remove(item)
+                                    continue
+                            else:
+                                if item[1] == 1:
+                                    not_removed.remove(item)
+                                    continue
+                        if not_removed == []:
+                            only_way_actions.append([x+1,y])
+                        state.board.possible_matrix[x][y-1][0][0] = not_removed
+                        state.board.possible_matrix[x][y-1][0][1] = len(not_removed)
+                index += 1
+            
+            # A PARTIR DAQUI E DENTRO DO ACTIONS ESTÁ TUDO BEM
+
+        print("only_way_actions: ", only_way_actions)
+        print("possible_matrix: ", state.board.possible_matrix)
+        action_list = []
+        for row in range(state.board.rows):
+                for col in range(state.board.cols):
+                    for item in state.board.possible_matrix[row][col]:
+                        action_list.append(item)
+        print ("action_list: ", action_list)
+        action_list_sorted = sorted(action_list, key=lambda item: item[1])
+        print ("action_list_sorted: ", action_list_sorted)
+        return action_list_sorted
 
         
 
@@ -150,55 +260,72 @@ class PipeMania(Problem):
         # self.actions(state).
         # TODO
         actions_list = self.actions(state)
-        matrix = self.state.board.matrix
-        possible_matrix = self.state.board.possible_matrix
+        print("result id: ", state.id)
         if (action in actions_list):
+            matrix = copy.deepcopy(state.board.matrix)
+            possible_matrix = copy.deepcopy(state.board.possible_matrix)
+            matrix[action[0]][action[1]][0] = action[2]
+            new_board = Board(matrix, possible_matrix)
+            new_state = PipeManiaState(new_board)
+            return new_state
+        else:
+            return state
+            """
             new_matrix = []
             new_possible_matrix = []
             for row in range(state.board.rows):
                 new_row = []
                 new_possible_row = []
                 for col in range(state.board.cols):
+                    new_row.append(matrix[row][col].copy())
                     for item in possible_matrix[row][col]:
-                        if item[0] != action[2]:
+                        if row == action[0] and col == action[1]:
+                            if item[0] != action[2]:
+                                new_possible_item = []
+                                new_possible_item.append(item[0].copy())
+                                item1 = item[1].copy()
+                                if item1 == 2:
+                                    only_one_action = 1
+                                new_possible_item.append(item1 -1)
+                        else:
                             new_possible_item = []
                             new_possible_item.append(item[0].copy())
                             new_possible_item.append(item[1].copy())
                         new_possible_row.append(new_possible_item)
-                    new_item = []
-                    new_item.append(matrix[row][col][0].copy())
-                    new_item.append(matrix[row][col][1].copy())
-                    new_row.append(new_item)
                 new_matrix.append(new_row)
                 new_possible_matrix.append(new_row)
-            new_matrix[action[0]][action[1]][0] = action[2]
-            item = actions_list[0]
+            new_matrix[action[0]][action[1]] = action[2]
             itr = 0
-            while item[3] != 0:
+            correct_blocks = state.correct_blocks
+            while itr < len(actions_list) and actions_list[itr][3] == 1:
                 new_matrix[actions_list[itr][0]][actions_list[itr][1]] = actions_list[itr][2]
-                new_possible_matrix[actions_list[itr][0]][actions_list[itr][1]]
+                new_possible_matrix[actions_list[itr][0]][actions_list[itr][1]] = []
+                correct_blocks += 1
                 itr += 1
-            self.possible_actions = self.possible_actions[itr:]
-            new_board = Board(new_matrix)
+            print("new_possible_matrix: ", new_possible_matrix)
+            new_board = Board(new_matrix, new_possible_matrix)
             new_state = PipeManiaState(new_board)
+            new_state.only_one_action = only_one_action
+            new_state.correct_blocks = correct_blocks
             return new_state
         else:
             return state
+        """
     
     def goal_test(self, state):
-        if len(state.possible_actions):
+        if state.correct_blocks == (state.board.rows * state.board.cols):
             return True
         else:
             return False
     
     def h(self, node: Node):
         # Função heuristica utilizada para a procura A*.
-        return len(node.state.possible_actions)
+        return node.state.correct_blocks
     
 def main():
         board = Board.parse_instance()
         problem = PipeMania(board)
-        result = astar_search(problem)
+        result = depth_first_tree_search(problem)
         print(result.state.board.final_matrix())
 
 if __name__ == "__main__":
