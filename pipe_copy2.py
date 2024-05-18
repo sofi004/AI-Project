@@ -18,9 +18,7 @@ from search import (
 )
 
 class Board:
-    def __init__(self, matrix=None, possible_matrix=None, correct_blocks=None, only_way_actions=None):
-        self.correct_blocks = correct_blocks
-        self.only_way_actions = only_way_actions
+    def __init__(self, matrix=None, possible_matrix=None):
         self.matrix = matrix
         self.rows = len(matrix)
         self.cols = len(matrix[0])
@@ -82,7 +80,6 @@ class Board:
             possible_matrix.append(possible_matrix_row)
 
         ##################################################################
-        correct_blocks = 0
         only_way_actions = []
         for row in range(num_rows):
             for col in range(num_rows):
@@ -137,12 +134,10 @@ class Board:
                     if(block_actions[0] == matrix[row][col]): 
                         print("entrou")
                         length = 0
-                        correct_blocks += 1
                 new_block_actions = []
                 new_block_actions.append(block_actions)
                 new_block_actions.append(length)
                 possible_matrix[row][col] = new_block_actions
-        print("possible:: ", possible_matrix)
 
         # ATÉ AQUI ESTÁ TUDO CERTO SÓ NÃO PERCEBO PORQUE É QUE O ACTIONS É CORRIDO DUAS VEZES COM STATE.ID = 0 SECALHAR É SUPOSTO GUARDAR MOS A actions_list PARA APROVEITARMOS ESSA PRIMEIRA VEZ QUE CORRE O ACTIONS E DEPOIS SÓ CHAMAR O ACTIONS NO RESULT APÓS TROCAR O ESTADO ID?
         num_row_minus = (len(possible_matrix) - 1)
@@ -223,8 +218,8 @@ class Board:
                     possible_matrix[x][y-1][0] = not_removed
                     possible_matrix[x][y-1][1] = l
             index += 1
-            print(correct_blocks)
-        return Board(matrix, possible_matrix, correct_blocks, only_way_actions)
+        print("possible:: ", possible_matrix)
+        return Board(matrix, possible_matrix)
     
 
 class PipeManiaState:
@@ -266,7 +261,6 @@ class PipeMania(Problem):
                         action_list.append(new_item)
                 col += 1
         action_list_sorted = sorted(action_list, key=lambda item: item[3])
-        print("before", state.board.possible_matrix, state.id)
         return action_list_sorted
 
         
@@ -282,17 +276,11 @@ class PipeMania(Problem):
             matrix = copy.deepcopy(state.board.matrix)
             possible_matrix = copy.deepcopy(state.board.possible_matrix)
             matrix[action[0]][action[1]] = action[2]
-            print("aaaaaaaaaa", action, state.id)
             possible_matrix[action[0]][action[1]][0].remove(action[2])
             possible_matrix[action[0]][action[1]][1] -= 1
-            print("after", possible_matrix, state.id)
-            correct_blocks = state.board.correct_blocks
-            only_way_actions = copy.deepcopy(state.board.only_way_actions)
-            if (action[3] == 1):
-                correct_blocks += 1
-                only_way_actions.append([action[0], action[1]])
-            print("OOOOOOO", only_way_actions)
-            new_board = Board(matrix, possible_matrix, correct_blocks, only_way_actions)
+            new_board = Board(matrix = None, possible_matrix=None)
+            new_board.matrix = matrix
+            new_board.possible_matrix = possible_matrix
             new_state = PipeManiaState(new_board)
             return new_state
         else:
@@ -343,12 +331,19 @@ class PipeMania(Problem):
         """
     
     def goal_test(self, state):
-
-        return state.board.correct_blocks == (state.board.rows * state.board.cols) # OU VER QUANDO O NÚMERO DE AÇÕES POSSIVEIS FOR 0
+        for row in range(state.board.rows):
+            for col in range(state.board.rows):
+                if state.board.possible_matrix[row][col][1] != 0:
+                    return False
+        return True # OU VER QUANDO O NÚMERO DE AÇÕES POSSIVEIS FOR 0
     
     def h(self, node: Node):
         # Função heuristica utilizada para a procura A*.
-        return (node.state.board.rows * node.state.board.cols) - node.state.board.correct_blocks # OU UTILIZAR O NÚMERO DE AÇÕES POSSIVEIS, MAS ACHO QUE FAZ MAIS SENTIDO VER O NÚMERO DE PEÇAS QUE JÁ FORAM TROCADAS E QUE EFETIVAMENTE JÁ ESTÃO BEM NO BOARD
+        count = 0
+        for row in range(node.state.board.rows):
+            for col in range(node.state.board.rows):
+                count += node.state.board.possible_matrix[row][col][1]
+        return count # OU UTILIZAR O NÚMERO DE AÇÕES POSSIVEIS, MAS ACHO QUE FAZ MAIS SENTIDO VER O NÚMERO DE PEÇAS QUE JÁ FORAM TROCADAS E QUE EFETIVAMENTE JÁ ESTÃO BEM NO BOARD
     
 def main():
         board = Board.parse_instance()

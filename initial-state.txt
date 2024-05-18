@@ -1,3 +1,2 @@
-FD LV VE
-VE FC LH
-VB LV VE
+VB	VE
+FC	FC
