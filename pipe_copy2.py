@@ -6,6 +6,7 @@
 
 import sys
 import copy
+import time
 from sys import stdin
 from search import (
     Problem,
@@ -351,10 +352,12 @@ class PipeMania(Problem):
         return count
     
 def main():
+        start_time = time.time()
         board = Board.parse_instance()
         problem = PipeMania(board)
         result = greedy_search(problem)
         print(result.state.board.final_matrix())
+        print(time.time() - start_time)
 
 if __name__ == "__main__":
     main()
