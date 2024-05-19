@@ -444,7 +444,7 @@ class PipeMania(Problem):
                 #print("col: ", col)
                 #print("item: ", item)
                 #print(item[0] != [])
-                if (item[0] != []):
+                if (item[1] > 0):
                     for possible_action_block in item[0]:
                         #print(possible_action_block != state.board.matrix[row][col])
                         if (possible_action_block != state.board.matrix[row][col]):
