@@ -192,11 +192,9 @@ class Board:
                         only_way_actions.append([x,y-1])
                         matrix[x][y-1] = not_removed[0]
                         correct_blocks += 1
-                        possible_matrix[x][y-1][1] = 0
-                        possible_matrix[x][y-1][0] = []
+                        possible_matrix[x][y-1] = [[], 0]
                     else:
-                        possible_matrix[x][y-1][1] = l
-                        possible_matrix[x][y-1][0] = not_removed
+                        possible_matrix[x][y-1] = [not_removed, l]
             if x > 0:
                 if possible_matrix[x-1][y][1] != 0 and possible_matrix[x-1][y][1] != 1:
                     not_removed = []
@@ -215,11 +213,9 @@ class Board:
                         only_way_actions.append([x,y-1])
                         matrix[x][y-1] = not_removed[0]
                         correct_blocks += 1
-                        possible_matrix[x-1][y][1] = 0
-                        possible_matrix[x-1][y][0] = []
+                        possible_matrix[x-1][y] = [[], 0]
                     else:
-                        possible_matrix[x-1][y][1] = l
-                        possible_matrix[x-1][y][0] = not_removed
+                        possible_matrix[x-1][y] = [not_removed, l]
             if y < (num_row_minus):
                 if possible_matrix[x][y+1][1] != 0 and possible_matrix[x][y+1][1] != 1:
                     not_removed = []
@@ -238,11 +234,9 @@ class Board:
                         only_way_actions.append([x,y+1])
                         matrix[x][y+1] = not_removed[0]
                         correct_blocks += 1
-                        possible_matrix[x][y+1][1] = 0
-                        possible_matrix[x][y+1][0] = []
+                        possible_matrix[x][y+1] = [[], 0]
                     else:
-                        possible_matrix[x][y+1][1] = l
-                        possible_matrix[x][y+1][0] = not_removed
+                        possible_matrix[x][y+1] = [not_removed, l]
             if x < (num_row_minus):
                 if possible_matrix[x+1][y][1] != 0 and possible_matrix[x+1][y][1] != 1:
                     not_removed = []
@@ -261,11 +255,9 @@ class Board:
                         only_way_actions.append([x+1,y])
                         matrix[x][y-1] = not_removed[0]
                         correct_blocks += 1
-                        possible_matrix[x+1][y][1] = 0
-                        possible_matrix[x+1][y][0] = []
+                        possible_matrix[x+1][y] = [[], 0]
                     else:
-                        possible_matrix[x+1][y][1] = l
-                        possible_matrix[x+1][y][0] = not_removed
+                        possible_matrix[x+1][y] = [not_removed, l]
             index += 1
         only_way_actions = []
         return Board(matrix, possible_matrix, only_way_actions, correct_blocks)
@@ -318,11 +310,11 @@ class PipeMania(Problem):
                         state.board.only_way_actions.append([x,y-1])
                         state.board.matrix[x][y-1] = not_removed[0]
                         state.board.correct_blocks += 1
-                        state.board.possible_matrix[x][y-1][1] = 0
-                        state.board.possible_matrix[x][y-1][0] = []
+                        state.board.possible_matrix[x][y-1] = [[],0]
+                    elif l == 0:
+                        return []
                     else:
-                        state.board.possible_matrix[x][y-1][1] = l
-                        state.board.possible_matrix[x][y-1][0] = not_removed
+                        state.board.possible_matrix[x][y-1] = [not_removed, l]
             if x > 0:
                 if state.board.possible_matrix[x-1][y][1] != 0 and state.board.possible_matrix[x-1][y][1] != 1:
                     not_removed = []
@@ -341,14 +333,13 @@ class PipeMania(Problem):
                         state.board.only_way_actions.append([x-1,y])
                         state.board.matrix[x-1][y] = not_removed[0]
                         state.board.correct_blocks += 1
-                        state.board.possible_matrix[x-1][y][1] = 0
-                        state.board.possible_matrix[x-1][y][0] = []
+                        state.board.possible_matrix[x-1][y] = [[], 0]
+                    elif l == 0:
+                        return []
                     else:
-                        state.board.possible_matrix[x-1][y][1] = l
-                        state.board.possible_matrix[x-1][y][0] = not_removed
+                        state.board.possible_matrix[x-1][y] = [not_removed, l]
             if y < (num_row_minus):
                 if state.board.possible_matrix[x][y+1][1] != 0 and state.board.possible_matrix[x][y+1][1] != 1:
-                    #print("entrou2")
                     not_removed = []
                     not_removed = copy.deepcopy(state.board.possible_matrix[x][y+1][0])
                     for item in state.board.possible_matrix[x][y+1][0]:
@@ -365,14 +356,13 @@ class PipeMania(Problem):
                         state.board.only_way_actions.append([x,y+1])
                         state.board.matrix[x][y+1] = not_removed[0]
                         state.board.correct_blocks += 1
-                        state.board.possible_matrix[x][y+1][1] = 0
-                        state.board.possible_matrix[x][y+1][0] = []
+                        state.board.possible_matrix[x][y+1] = [[], 0]
+                    elif l == 0:
+                        return []
                     else:
-                        state.board.possible_matrix[x][y+1][1] = l
-                        state.board.possible_matrix[x][y+1][0] = not_removed
+                        state.board.possible_matrix[x][y+1] = [not_removed, l]
             if x < (num_row_minus):
                 if state.board.possible_matrix[x+1][y][1] != 0 and state.board.possible_matrix[x+1][y][1] != 1:
-                    #print("entrou3")
                     not_removed = []
                     not_removed = copy.deepcopy(state.board.possible_matrix[x+1][y][0])
                     for item in state.board.possible_matrix[x+1][y][0]:
@@ -389,15 +379,15 @@ class PipeMania(Problem):
                         state.board.only_way_actions.append([x+1,y])
                         state.board.matrix[x+1][y] = not_removed[0]
                         state.board.correct_blocks += 1
-                        state.board.possible_matrix[x+1][y][1] = 0
-                        state.board.possible_matrix[x+1][y][0] = []
+                        state.board.possible_matrix[x+1][y] = [[], 0]
+                    elif l == 0:
+                        return []
                     else:
-                        state.board.possible_matrix[x+1][y][1] = l
-                        state.board.possible_matrix[x+1][y][0] = not_removed
+                        state.board.possible_matrix[x+1][y] = [not_removed, l]
             index += 1
         action_list = []
         state.board.only_way_actions = []
-        for row in range(state.board.rows):        
+        for row in range(state.board.rows):    
             col = 0
             for item in state.board.possible_matrix[row]:
                 if (item[1] > 0):
@@ -410,7 +400,7 @@ class PipeMania(Problem):
         return action_list_sorted
 
         
-
+    
     def result(self, state: PipeManiaState, action: list):
         # Retorna o estado resultante de executar a 'action' sobre
         # 'state' passado como argumento. A ação a executar deve ser uma
@@ -423,16 +413,14 @@ class PipeMania(Problem):
         n_possible_matrix = copy.deepcopy(state.board.possible_matrix)
         n_only_way_actions = []
         n_matrix[action[0]][action[1]] = action[2]
-        vertical_values = state.board.adjacent_vertical_values(action[0], action[1])
-        horizontal_values = state.board.adjacent_horizontal_values(action[0], action[1])
-        if vertical_values[0][1] == 0 and vertical_values[1][1] == 0 and horizontal_values[0][1] == 0 and horizontal_values[1][1] == 0 and state.board.verify_connections(action[0], action[1]) == 0:
-            n_correct_blocks += 1
-            n_only_way_actions.append([action[0], action[1]])
-            n_possible_matrix[action[0]][action[1]][0] = []
-            n_possible_matrix[action[0]][action[1]][1] = 0
+        n_correct_blocks += 1
+        n_only_way_actions.append([action[0], action[1]])
+        n_possible_matrix[action[0]][action[1]] = [[], 0]
         new_board = Board(matrix=n_matrix, possible_matrix=n_possible_matrix, only_way_actions=n_only_way_actions, correct_blocks=n_correct_blocks)
         new_state = PipeManiaState(new_board)
+
         print(n_correct_blocks)
+        print(n_possible_matrix)
         return new_state
     
     
