@@ -247,6 +247,27 @@ class Board:
                         possible_matrix[x+1][y][1] = l
                         possible_matrix[x+1][y][0] = not_removed
             index += 1
+
+        start = (0,0)
+        visited = set()
+        visited.add((0, 0))
+        queue = [start]
+        while queue:
+            (r, c) = queue.pop(0)
+            if r > 0 and matrix[r][c][1] == 1 and matrix[r-1][c][3] == 1 and (r-1, c) not in visited:
+                queue.append((r-1, c))
+                visited.add((r-1, c))
+            if r < len(matrix) - 1 and matrix[r][c][3] == 1 and matrix[r+1][c][1] == 1 and (r+1, c) not in visited:
+                queue.append((r+1, c))
+                visited.add((r+1, c))
+            if c > 0 and matrix[r][c][0] == 1 and matrix[r][c-1][2] == 1 and (r, c-1) not in visited:
+                queue.append((r, c-1))
+                visited.add((r, c-1))
+            if c < len(matrix) - 1 and matrix[r][c][2] == 1 and matrix[r][c+1][0] == 1 and (r, c+1) not in visited:
+                queue.append((r, c+1))
+                visited.add((r, c+1))
+        if(len(visited) == (len(matrix)  * len(matrix))):
+            correct_blocks = len(matrix) * len(matrix)
         return Board(matrix, possible_matrix, correct_blocks)
 
 
