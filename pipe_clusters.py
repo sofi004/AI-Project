@@ -30,7 +30,6 @@ class Board:
         self.matrix = matrix
         self.possible_matrix = possible_matrix
         self.correct_blocks = correct_blocks
-        self.clusters = 0
         self.rows = len(matrix)
         self.cols = len(matrix[0])
 
@@ -38,23 +37,25 @@ class Board:
     def no_clusters(self):
         start = (0,0)
         visited = set()
+        visited.add((0, 0))
         queue = [start]
         while queue:
             (r, c) = queue.pop(0)
-            if (r, c) not in visited:
-                visited.add((r, c))
-                if r > 0 and self.matrix[r][c][1] == 1 and self.matrix[r-1][c][3] == 1:
-                    queue.append((r-1, c))
-                if r < self.rows - 1 and self.matrix[r][c][3] == 1 and self.matrix[r+1][c][1] == 1:
-                    queue.append((r+1, c))
-                if c > 0 and self.matrix[r][c][0] == 1 and self.matrix[r][c-1][2] == 1:
-                    queue.append((r, c-1))
-                if c < self.cols - 1 and self.matrix[r][c][2] == 1 and self.matrix[r][c+1][0] == 1:
-                    queue.append((r, c+1))
-        if len(visited) == (self.rows * self.rows):
-            return True
-        self.clusters = 1
-        return False
+            if r > 0 and self.matrix[r][c][1] == 1 and self.matrix[r-1][c][3] == 1 and (r-1, c) not in visited:
+                queue.append((r-1, c))
+                visited.add((r-1, c))
+            if r < self.rows - 1 and self.matrix[r][c][3] == 1 and self.matrix[r+1][c][1] == 1 and (r+1, c) not in visited:
+                queue.append((r+1, c))
+                visited.add((r+1, c))
+            if c > 0 and self.matrix[r][c][0] == 1 and self.matrix[r][c-1][2] == 1 and (r, c-1) not in visited:
+                queue.append((r, c-1))
+                visited.add((r, c-1))
+            if c < self.cols - 1 and self.matrix[r][c][2] == 1 and self.matrix[r][c+1][0] == 1 and (r, c+1) not in visited:
+                queue.append((r, c+1))
+                visited.add((r, c+1))
+        print(visited)
+        print(len(visited))
+        return (len(visited) == (self.rows * self.rows))
 
     def final_matrix(self):
         final_string = ""
@@ -275,8 +276,6 @@ class PipeMania(Problem):
         # Retorna uma lista de ações que podem ser executadas a
         # partir do estado passado como argumento.
         # TODO
-        if(state.board.clusters == 1):
-            return []
         for row in range(state.board.rows):        
             col = 0
             for item in state.board.possible_matrix[row]:
