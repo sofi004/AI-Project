@@ -36,39 +36,23 @@ class Board:
 
         
     def no_clusters(self):
-        # Inicializa a variável 'start' para armazenar a primeira peça não vazia encontrada
         start = (0,0)
-
-        # Inicializa um conjunto para armazenar as peças visitadas
         visited = set()
-        # Inicializa uma fila com a primeira peça encontrada
         queue = [start]
-
-        # Enquanto houver peças na fila
         while queue:
-            # Remove a primeira peça da fila (comportamento de BFS)
             (r, c) = queue.pop(0)
-            # Se a peça ainda não foi visitada
             if (r, c) not in visited:
-                # Marca a peça como visitada
                 visited.add((r, c))
-
-                # Verifica e adiciona os vizinhos conectados à fila
-                # Verifica a peça acima (r-1, c)
                 if r > 0 and self.matrix[r][c][1] == 1 and self.matrix[r-1][c][3] == 1:
                     queue.append((r-1, c))
-                # Verifica a peça abaixo (r+1, c)
                 if r < self.rows - 1 and self.matrix[r][c][3] == 1 and self.matrix[r+1][c][1] == 1:
                     queue.append((r+1, c))
-                # Verifica a peça à esquerda (r, c-1)
                 if c > 0 and self.matrix[r][c][0] == 1 and self.matrix[r][c-1][2] == 1:
                     queue.append((r, c-1))
-                # Verifica a peça à direita (r, c+1)
                 if c < self.cols - 1 and self.matrix[r][c][2] == 1 and self.matrix[r][c+1][0] == 1:
                     queue.append((r, c+1))
         if len(visited) == (self.rows * self.rows):
             return True
-        print("olá0")
         self.clusters = 1
         return False
 
@@ -291,9 +275,7 @@ class PipeMania(Problem):
         # Retorna uma lista de ações que podem ser executadas a
         # partir do estado passado como argumento.
         # TODO
-        print(state.board.clusters)
         if(state.board.clusters == 1):
-            print("olá1")
             return []
         for row in range(state.board.rows):        
             col = 0
