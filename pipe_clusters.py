@@ -53,8 +53,6 @@ class Board:
             if c < self.cols - 1 and self.matrix[r][c][2] == 1 and self.matrix[r][c+1][0] == 1 and (r, c+1) not in visited:
                 queue.append((r, c+1))
                 visited.add((r, c+1))
-        print(visited)
-        print(len(visited))
         return (len(visited) == (self.rows * self.rows))
 
     def final_matrix(self):
@@ -285,6 +283,25 @@ class PipeMania(Problem):
                         return [new_item]
                 col += 1
         return []
+    
+    def actions(self, state: PipeManiaState):
+        # Retorna uma lista de ações que podem ser executadas a
+        # partir do estado passado como argumento.
+        # TODO
+        action_list = []
+        for row in range(state.board.rows):        
+            col = 0
+            for item in state.board.possible_matrix[row]:
+                if item[1] == -1:
+                    return []
+                if item[1] != 0:
+                    for possible_action_block in item[0]:
+                        if (possible_action_block != state.board.matrix[row][col]):
+                            new_item = [row, col, possible_action_block, item[1]]
+                            action_list.append(new_item)
+                col += 1
+        action_list_sorted = sorted(action_list, key=lambda item: item[3])
+        return action_list_sorted
 
 
 
