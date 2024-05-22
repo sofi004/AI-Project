@@ -290,20 +290,6 @@ class PipeMania(Problem):
         self.initial = PipeManiaState(initial_state)
         # TODO
         pass
-
-    def actions(self, state: PipeManiaState):
-        # Retorna uma lista de ações que podem ser executadas a
-        # partir do estado passado como argumento.
-        # TODO
-        for row in range(state.board.rows):        
-            col = 0
-            for item in state.board.possible_matrix[row]:
-                if item[1] != 0:
-                    for possible_action_block in item[0]:
-                        new_item = [row, col, possible_action_block, item[1]]
-                        return [new_item]
-                col += 1
-        return []
     
     def actions(self, state: PipeManiaState):
         # Retorna uma lista de ações que podem ser executadas a
