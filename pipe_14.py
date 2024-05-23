@@ -300,7 +300,6 @@ class PipeMania(Problem):
             col = 0
             for item in state.board.possible_matrix[row]:
                 if item[1] == -1:
-                    print(state.id, state.board.possible_matrix)
                     return []
                 if item[1] != 0:
                     for possible_action_block in item[0]:
